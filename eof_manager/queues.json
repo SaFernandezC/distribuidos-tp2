@@ -1,0 +1,57 @@
+{
+    "date_modifier": {
+        "writing": 1,
+        "listening": 1,
+        "eof_received": 0
+    },
+    "joiner_1": {
+        "writing": 2,
+        "listening": 2,
+        "eof_received": 0
+    },
+    "groupby_query_1": {
+        "writing": 2,
+        "listening": 1,
+        "eof_received": 0
+    },
+    "joiner_2": {
+        "writing": 2,
+        "listening": 2,
+        "eof_received": 0
+    },
+    "groupby_query_2": {
+        "writing": 2,
+        "listening": 1,
+        "eof_received": 0
+    },
+    "joiner_3": {
+        "writing": 2,
+        "listening": 2,
+        "eof_received": 0
+    },
+    "distance_calculator": {
+        "writing": 2,
+        "listening": 1,
+        "eof_received": 0
+    },
+    "groupby_query_3": {
+        "writing": 1,
+        "listening": 1,
+        "eof_received": 0
+    },
+    "trip": {
+        "writing": 1,
+        "listening": 2,
+        "eof_received": 0
+    },
+    "weather": {
+        "writing": 1,
+        "listening": 1,
+        "eof_received": 0
+    },
+    "station": {
+        "writing": 1,
+        "listening": 1,
+        "eof_received": 0
+    }
+}

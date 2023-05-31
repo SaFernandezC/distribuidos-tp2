@@ -1,0 +1,15 @@
+version: '3'
+services:
+  client:
+    container_name: client
+    image: client:latest
+    networks:
+      - distribuidos-tp1_testing_net
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/data
+
+networks:
+  distribuidos-tp1_testing_net:
+    external: true

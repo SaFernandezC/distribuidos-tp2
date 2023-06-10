@@ -24,6 +24,8 @@ class Joiner():
         signal.signal(signal.SIGTERM, self._handle_sigterm)
         self.joiner_function = joiner_function
 
+        self.eof_received = []
+
     def _handle_sigterm(self, *args):
         """
         Handles SIGTERM signal
@@ -40,45 +42,56 @@ class Joiner():
             return select.split(',')
         else: return None
 
-    def _add_item(self, item):
-        values = []
-        for _i in self.key1:
-            values.append(item[_i])
-            del item[_i]
-        
-        self.side_table[tuple(values)] = item
+    def _add_item(self, client_id, data):
+        if client_id not in self.side_table:
+            self.side_table[client_id] = {}
+
+        for item in data:
+            values = []
+            for _i in self.key1:
+                values.append(item[_i])
+                del item[_i]
+            
+            self.side_table[client_id][tuple(values)] = item
 
     def _callback_queue1(self, body):
         batch = json.loads(body.decode())
+        client_id = batch["client_id"]
+        # print(f"cliente: {client_id} -> {batch}")
         if "eof" in batch:
-            print(f"{time.asctime(time.localtime())} RECIBO EOF CALLBACK 1 ---> DEJO DE ESCUCHAR, {batch}")
-            self.connection.stop_consuming()
+            # Cuando recibo el EOF de cierto cliente deberia subscribir al topico de ese cliente ?
+            # Problema de perdida de mensajes si no hay nadie escuchando ahi
+            self.eof_received.append(client_id)
+            if len(self.eof_received) == 2:
+                print(f"{time.asctime(time.localtime())} RECIBO EOF CALLBACK 1 PARA CLIENT {client_id} ---> DEJO DE ESCUCHAR, {batch}")
+                self.connection.stop_consuming()
         else:
-            for item in batch["data"]:
-                self._add_item(item)
+            self._add_item(client_id, batch["data"])
 
     def _select(self, row):
         if not self.fields_to_select: return row
         return {key: row[key] for key in self.fields_to_select}
 
-    def _join(self, item):
+    def _join(self, client_id, item):
         function = eval(self.joiner_function)
-        return function(self.key2, item, self.side_table)
+        return function(self.key2, item, self.side_table[client_id])
 
     def _callback_queue2(self, body):
         batch = json.loads(body.decode())
+        client_id = batch["client_id"]
+
         if "eof" in batch:
             print(f"{time.asctime(time.localtime())} RECIBO EOF CALLBACK 2 ---> DEJO DE ESCUCHAR, {batch}")
-            self.connection.stop_consuming()
-            self.eof_manager.send_eof()
+            # self.connection.stop_consuming()
+            self.eof_manager.send_eof(client_id)
         else:
             data = []
             for item in batch["data"]:
-                joined, res = self._join(item)
+                joined, res = self._join(client_id, item)
 
                 if joined:
                     data.append(self._select(res))
-            self.output_queue.send(json.dumps({"data":data}))
+            self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
 
     def run(self):
         self.input_queue1.receive(self._callback_queue1)

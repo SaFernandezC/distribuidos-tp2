@@ -26,13 +26,17 @@ class StatusController:
         
     def _callback(self, body):
         line = json.loads(body.decode())
-        self.data[line["query"]] = line["results"]
-        print(line)
+        client_id = line["client_id"]
+        
+        if client_id not in self.data:
+            self.data[client_id] = {}
 
-        if len(self.data) == self.qty_of_queries:
+        self.data[client_id][line["query"]] = line["results"]
+        # print(line)
+
+        if len(self.data[client_id]) == self.qty_of_queries:
             self.output_queue.send(json.dumps(self.data))
-    
-            print("Resultado: ", self.data)
+            print(f"Resultado de cliente {client_id}: ", self.data)
     
     def run(self):
         self.input_queue.receive(self._callback)

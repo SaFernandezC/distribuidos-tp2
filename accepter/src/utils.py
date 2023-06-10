@@ -3,13 +3,19 @@ class Asker():
         self.connection = connection
         self.metrics_queue = metrics_queue
         self.results_queue = results_queue
+        self.stopped = False
 
     def run(self):
         self.metrics_queue.receive(self._callback)
-        self.connection.start_consuming()
-        self.connection.close()
+        if not self.stopped:
+            self.stop()
 
     def _callback(self, body):
         data = body.decode()
         self.results_queue.put(data)
         self.connection.stop_consuming()
+    
+    def stop(self):
+        self.connection.stop_consuming()
+        self.connection.close()
+        self.stopped = True

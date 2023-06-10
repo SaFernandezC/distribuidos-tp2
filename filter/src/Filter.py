@@ -7,6 +7,8 @@ import logging
 SIN_FILTROS = 0
 SIN_SELECCIONES = 0
 
+INT_LENGTH = 4
+
 class Filter:
     def __init__(self, fields_to_select, raw_filters, amount_filters, operators, input_exchange, input_exchange_type,
                 input_queue_name, output_exchange, output_exchange_type, output_queue_name):
@@ -92,10 +94,11 @@ class Filter:
 
     def _callback(self, body):
         batch = json.loads(body.decode())
+        client_id = batch["client_id"]
         if "eof" in batch:
-            self.connection.stop_consuming()
-            self.eof_manager.send_eof()
-            print("Recibo eof -> Envio EOF")
+            # self.connection.stop_consuming()
+            self.eof_manager.send_eof(client_id)
+            print(f"Recibo eof de cliente: {client_id}-> Envio EOF")
         else:
             data = []
             for item in batch["data"]:
@@ -109,4 +112,4 @@ class Filter:
                     
                 if filtered:
                     data.append(self.select(item))
-            self.output_queue.send(json.dumps({"data":data}))
+            self.output_queue.send(json.dumps({"client_id":client_id, "data":data}))

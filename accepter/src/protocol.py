@@ -66,6 +66,7 @@ class Protocol:
         batch_size_bytes = skt.recv_msg(self.cant_bytes_len)
         batch_size = int.from_bytes(batch_size_bytes, byteorder='big')
         batch = skt.recv_msg(batch_size).decode()
+        # batch = skt.recv_msg(batch_size)
         return batch
 
     def recv_data(self, skt):

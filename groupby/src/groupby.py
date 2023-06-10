@@ -36,23 +36,23 @@ class Groupby:
     def _sum(self):
         return 0
 
-    def _avg(self, key, item):
-        if key in self.group_table:
-            self.group_table[key]['count'] = self.group_table[key]['count'] + 1
-            self.group_table[key]['sum'] = self.group_table[key]['sum'] + float(item[self.field_to_agregate])
-            self.group_table[key][self.field_to_agregate] = self.group_table[key]['sum'] / self.group_table[key]['count']
+    def _avg(self, key, item, group_table):
+        if key in group_table:
+            group_table[key]['count'] = group_table[key]['count'] + 1
+            group_table[key]['sum'] = group_table[key]['sum'] + float(item[self.field_to_agregate])
+            group_table[key][self.field_to_agregate] = group_table[key]['sum'] / group_table[key]['count']
         else: 
             value = float(item[self.field_to_agregate])
-            self.group_table[key] = {self.field_to_agregate:value, "count": 1, "sum": value}
+            group_table[key] = {self.field_to_agregate:value, "count": 1, "sum": value}
 
-    def _count(self, key, item):
-        if key in self.group_table:
-            if item[self.field_to_agregate] in self.group_table[key]:
-                self.group_table[key][item[self.field_to_agregate]] += 1
+    def _count(self, key, item, group_table):
+        if key in group_table:
+            if item[self.field_to_agregate] in group_table[key]:
+                group_table[key][item[self.field_to_agregate]] += 1
             else:
-                self.group_table[key][item[self.field_to_agregate]] = 1
+                group_table[key][item[self.field_to_agregate]] = 1
         else:
-            self.group_table[key] = {item[self.field_to_agregate]: 1}
+            group_table[key] = {item[self.field_to_agregate]: 1}
 
     def _define_agg(self, agg):
         if agg == 'avg':
@@ -70,20 +70,27 @@ class Groupby:
             return values[0]
         return tuple(values)
 
-    def _group(self, item):
-        key_dict = self._check_key_len(self.key, item)
-        self.agg_function(key_dict, item)
+    def _group(self, client_id, batch):
+        if client_id not in self.group_table:
+            self.group_table[client_id] = {}
+
+        for item in batch:
+            key_dict = self._check_key_len(self.key, item)
+            self.agg_function(key_dict, item, self.group_table[client_id])
 
     def _callback(self, body):
         batch = json.loads(body.decode())
+        client_id = batch["client_id"]
+        # print(batch)
         if "eof" in batch:
-            self.connection.stop_consuming()
+            # self.connection.stop_consuming()
             function = eval(self.send_data_function)
-            filtered = function(self.group_table)
-            self.output_queue.send(json.dumps({"query": self.query, "results": filtered}))
+            filtered = function(self.group_table[client_id])
+            self.output_queue.send(json.dumps({"client_id": client_id, "query": self.query, "results": filtered}))
         else:
-            for line in batch["data"]:
-                self._group(line)
+            self._group(client_id, batch["data"])   
+            # for line in batch["data"]:
+            #     self._group(line)
 
     def run(self):
         self.input_queue.receive(self._callback)

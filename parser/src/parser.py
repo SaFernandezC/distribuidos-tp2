@@ -4,6 +4,8 @@ from .utils import send
 import signal
 import logging
 
+INT_LENGTH = 4
+
 class Parser():
     def __init__(self, input_queue, routing_key, output_exchange, output_exchange_type):
         self.running = True
@@ -25,12 +27,13 @@ class Parser():
 
     def _callback(self, body):
         batch = json.loads(body.decode())
+        client_id = batch["client_id"]
         if "eof" in batch:
-            self.connection.stop_consuming()
-            self.eof_manager.send_eof()
-            print("RECIBO EOF -> ENVIO EOF")
+            # self.connection.stop_consuming()
+            self.eof_manager.send_eof(client_id)
+            print(f"RECIBO EOF DE CLEINTE {client_id}-> ENVIO EOF")
         else:
-            send(self.output_queue, batch)
+            send(self.output_queue, batch["data"], client_id)
     
     def run(self):
         self.input_queue.receive(self._callback)

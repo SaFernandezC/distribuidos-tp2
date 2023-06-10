@@ -9,17 +9,17 @@
         }
     },
     "trips": {
-        "writing": 2,
+        "writing": 1,
         "eof_received": 0,
         "queues_binded": {
             "filter_trips_query1": {
-                "listening": 2
+                "listening": 1
             },
             "filter_trips_year": {
-                "listening": 2
+                "listening": 1
             },
             "filter_trips_query3": {
-                "listening": 2
+                "listening": 1
             }
         }
     },

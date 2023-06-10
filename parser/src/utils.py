@@ -35,7 +35,7 @@ def def_function(type):
     else: # Stations
         return parse_stations
 
-def send(queue, batch):
+def send(queue, batch, client_id):
     city = batch["city"]
     data = batch["data"]
     parser = def_function(batch["type"])
@@ -44,5 +44,5 @@ def send(queue, batch):
     for item in data:
         parsed.append(parser(item, city))
 
-    batch = json.dumps({"data":parsed})
+    batch = json.dumps({"client_id":client_id, "data":parsed})
     queue.send(batch)

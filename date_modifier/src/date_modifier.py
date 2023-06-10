@@ -65,13 +65,14 @@ class DateModifier():
 
     def _callback(self, body):
         batch = json.loads(body.decode())
+        client_id = batch["client_id"]
         if "eof" in batch:
-            self.connection.stop_consuming()
-            self.eof_manager.send_eof()
+            # self.connection.stop_consuming()
+            self.eof_manager.send_eof(client_id)
         else:
             for item in batch["data"]:
                 item['date'] = self._restar_dia(item['date'])
-            self.output_queue.send(json.dumps({"data":batch["data"]}))
+            self.output_queue.send(json.dumps({"client_id": client_id, "data":batch["data"]}))
     
     def run(self):
         self.input_queue.receive(self._callback)

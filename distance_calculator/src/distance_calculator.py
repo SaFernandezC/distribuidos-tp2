@@ -25,16 +25,17 @@ class DistanceCalculator:
 
     def _callback(self, body):
         batch = json.loads(body.decode())
+        client_id = batch["client_id"]
         if "eof" in batch:
-            self.connection.stop_consuming()
-            self.eof_manager.send_eof()
+            # self.connection.stop_consuming()
+            self.eof_manager.send_eof(client_id)
         else:
             data = []
             for item in batch["data"]:
                 distance = haversine((item['start_latitude'], item['start_longitude']), (item['end_latitude'], item['end_longitude']))
                 res = {"end_name": item["end_name"], "distance": distance}
                 data.append(res)
-            self.output_queue.send(json.dumps({"data":data}))
+            self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
 
     
     def run(self):

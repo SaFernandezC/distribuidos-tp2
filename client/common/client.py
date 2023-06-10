@@ -25,9 +25,9 @@ class Client:
             self.protocol.finish_sending_data(self.client_socket)
             ack = self.protocol.recv_ack(self.client_socket)
             if(ack):
-                logging.debug(f'action: send finish | result: success')
+                logging.info(f'action: send finish | result: success')
             else:
-                logging.debug(f'action: send finish | result: fail')
+                logging.info(f'action: send finish | result: fail')
         except Exception as e:
             logging.error("action: send weathers | result: fail | error: {}".format(e))
   

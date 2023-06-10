@@ -70,26 +70,26 @@ def main():
         client.send_stations(stations)
         
         trips = {
-            "montreal": "./data/montreal/trips.csv",
-            "toronto": "./data/toronto/trips.csv",
-            "washington": "./data/washington/trips.csv"
+            "montreal": "./data/montreal/reduced_trips_montreal.csv",
+            "toronto": "./data/toronto/reduced_trips_toronto.csv",
+            "washington": "./data/washington/reduced_trips_washington.csv"
         }
 
         client.send_trips(trips)
 
         ready = False
-        while not ready:
-            ready, data = client.ask_results()
-            logging.info("Waiting for data")
-            time.sleep(2)
+        # while not ready:
+        #     ready, data = client.ask_results()
+        #     logging.info("Waiting for data")
+        #     time.sleep(2)
         
-        logging.info("Data ready")
-        print("Query1: ", data["query1"])
-        print("*------------------*")
-        print("Query2: ", data["query2"])
-        print("*------------------*")
-        print("Query3: ", data["query3"])
-
+        # logging.info("Data ready")
+        # print("Query1: ", data["query1"])
+        # print("*------------------*")
+        # print("Query2: ", data["query2"])
+        # print("*------------------*")
+        # print("Query3: ", data["query3"])
+        ready, data = client.ask_results()
         client.send_finish()
     except Exception as e:
         logging.error("Error: {}".format(e))

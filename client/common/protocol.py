@@ -130,7 +130,8 @@ class Protocol:
         if res["ready"] == False:
             return False, {}
         else:
-            return True, json.loads(res["data"])
+            return True, res["data"]
+            # return True, json.loads(res["data"])
 
     def recv_ack(self, skt):
         """

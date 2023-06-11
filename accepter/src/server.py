@@ -1,6 +1,6 @@
 import logging
 import signal
-from .socket_wrapper import Socket
+from common.Socket import Socket
 from .protocol import Protocol
 import multiprocessing
 from common.Connection import Connection

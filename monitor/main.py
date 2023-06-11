@@ -12,6 +12,9 @@ def initialize_config():
     config_params = {}
     try:
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["node_id"] = int(os.getenv('NODE_ID', config["DEFAULT"]["NODE_ID"]))
+        config_params["nodes_id"] = os.getenv('NODES_ID', config["DEFAULT"]["NODES_ID"])
+        config_params["port"] = int(os.getenv('PORT', config["DEFAULT"]["PORT"]))
         # config_params["input_queue_name"] = config.get("DEFAULT", "INPUT_QUEUE_NAME", fallback=None)
         # config_params["output_exchange"] = config.get("DEFAULT", "OUTPUT_EXCHANGE", fallback=None)
         # config_params["output_exchange_type"] = config.get("DEFAULT", "OUTPUT_EXCHANGE_TYPE", fallback=None)
@@ -27,15 +30,18 @@ def initialize_config():
 def main():
     config_params = initialize_config()
     logging_level = config_params["logging_level"] 
+    node_id = config_params["node_id"] 
+    nodes_id = eval(config_params["nodes_id"])
+    port = config_params["port"] 
 
     initialize_log(logging_level)
 
     # Log config parameters at the beginning of the program to verify the configuration
     # of the component
-    logging.debug(f"action: config | result: success | logging_level: {logging_level}")
+    logging.info(f"action: config | result: success | logging_level: {logging_level} | node_id: {node_id} | nodes_id: {nodes_id}")
 
     try:
-        monitor = Monitor()
+        monitor = Monitor(node_id, nodes_id)
         monitor.run()
     except OSError as e:
         logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')

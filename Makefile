@@ -15,6 +15,7 @@ docker-image:
 	docker build -f ./distance_calculator/Dockerfile -t "distance_calculator:latest" .
 	docker build -f ./status_controller/Dockerfile -t "status_controller:latest" .
 	docker build -f ./eof_manager/Dockerfile -t "eof_manager:latest" .
+	docker build -f ./monitor/Dockerfile -t "monitor:latest" .
 .PHONY: docker-image
 
 docker-compose-up: docker-image

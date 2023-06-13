@@ -2,120 +2,186 @@ import socket
 import threading
 import time
 import logging
+import multiprocessing
+from .utils import AtomicValue
+
+class Sender:
+    def __init__(self, skt, queue):
+        self.queue = queue    
+        self.skt = skt    
+    
+    def run(self):
+        while True:
+            try:
+                while True:
+                    msg = self.queue.get()
+                    self.skt.sendto(msg[0].encode(), msg[1])
+                    # print(f"Send {msg[0]}")
+            except Exception as e:
+                logging.error("Sender: error sending message | error: {}".format(e))
+
+class Receiver:
+    def __init__(self, skt, queue):
+        self.queue = queue    
+        self.skt = skt    
+    
+    def run(self):
+        try:
+            while True:
+                pair = self.skt.recvfrom(1024)
+                self.queue.put(pair)
+        except Exception as e:
+            logging.error("Sender: error sending message | error: {}".format(e))
+
+WAIT_TIME = 10
 
 class Monitor:
     def __init__(self, replica_id, replicas):
         self.replica_id = replica_id
         self.replicas = replicas
-        self.leader_id = None
         self.is_leader = False
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.leader_id = AtomicValue(None)
+        self.election_in_process = AtomicValue(False)
+
+        self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         self.socket.bind(('', 5000 + self.replica_id))
-        self.socket.listen(5)
-        self.connections = []
+
+        self.sender_queue = multiprocessing.Queue()
+        self.receiver_queue = multiprocessing.Queue()
+
+        self.sender_thread = threading.Thread(target=Sender(self.socket, self.sender_queue).run).start()
+        self.receiver_thread = threading.Thread(target=Receiver(self.socket, self.receiver_queue).run).start()
+
         self.checkpoint = 0
 
-        self.start()
+        self.last_response_lock = threading.Lock() # Hacer un AtomicValue
+        self.leader_last_response_time = 0
+        self.leader_timeout_threshold = 5 
 
-    def start(self):
-        self.connect_to_higher_replicas()
-        self.accept_connections()
+        self.check_alive_thread = None
 
-    def connect_to_higher_replicas(self):
-        for higher_replica in self.replicas:
-            if higher_replica > self.replica_id:
-                try:
-                    higher_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    higher_socket.connect(('monitor'+str(higher_replica), 5000 + higher_replica))
-                    self.connections.append(higher_socket)
-                except ConnectionRefusedError:
-                    print(f'Replica {self.replica_id} failed to connect to higher replica {higher_replica}')
+        self.election_start_time_lock = threading.Lock() # Hacer un AtomicValue
+        self.election_start_time = None
 
-    def accept_connections(self):
-        while True:
-            conn, _ = self.socket.accept()
-            self.connections.append(conn)
-            threading.Thread(target=self.handle_client, args=(conn,)).start()
-
-    def handle_client(self, conn):
-        while True:
-            data = conn.recv(1024).decode()
-            if data == "ELECTION":
-                if self.leader_id is None or self.leader_id < self.replica_id:
-                    conn.sendall(b"OK")
-                    self.start_election()
-                else:
-                    conn.sendall(b"NOT_OK")
-            elif data == "COORDINATOR":
-                self.leader_id = self.replica_id
-                # self.send_message_to_all("COORDINATOR")
-                print(f"Replica {self.replica_id} is the new leader.")
-
-    def start_election(self):
-        print(f"Replica {self.replica_id} is starting an election.")
-        self.send_message_to_higher_replicas("ELECTION")
-
-    def send_message_to_higher_replicas(self, message):
-        for conn in self.connections:
-            conn.sendall(message.encode())
-
-    def send_message_to_all(self, message):
-        for conn in self.connections:
-            conn.sendall(message.encode())
-
-    def check_leader(self):
-        while True:
-            if self.leader_id is not None:
-                try:
-                    leader_socket = self.connections[self.leader_id - self.replica_id - 1]
-                    leader_socket.sendall(b"ALIVE?")
-                    response = leader_socket.recv(1024).decode()
-                    if response != "ALIVE!":
-                        print(f"Leader (Replica {self.leader_id}) is no longer alive.")
-                        self.leader_id = None
-                except IndexError:
-                    print(f"Invalid leader ID: {self.leader_id}")
-                    self.leader_id = None
-                except ConnectionResetError:
-                    print(f"Leader (Replica {self.leader_id}) connection reset.")
-                    self.leader_id = None
-            time.sleep(5)
-
-    def check_coordinator(self):
-        while True:
-            for conn in self.connections:
-                conn.sendall(b"ALIVE?")
-                response = conn.recv(1024).decode()
-                if response.startswith("ALIVE!"):
-                    new_leader_id = int(response.split(":")[1])
-                    if self.leader_id != new_leader_id:
-                        print(f"Replica {self.replica_id} found new leader: Replica {new_leader_id}")
-                        self.leader_id = new_leader_id
-            time.sleep(5)
-
-    def start_election_process(self):
-        self.start_election()
-        self.check_leader()
-
-    def start_coordinator_process(self):
-        self.check_coordinator()
-
-
-    def proclamate_leader(self):
-        self.send_message_to_all("COORDINATOR")
-        self.leader_id = self.replica_id
-        self.is_leader = True
-        self.set_checkpoint()
-
-    def set_checkpoint(self):
-        self.checkpoint = time.time()
 
     def run(self):
         if self.replica_id == 3:
-            self.proclamate_leader()
-            logging.info(f"Replica {self.replica_id} proclamates leader")
+            logging.info(f"Replica {self.replica_id} starts listening")
+            self.check_alive_thread = threading.Thread(target=self.check_leader)
+            self.check_alive_thread.start()
+            self.listen()
         else:
-            logging.info(f"Replica {self.replica_id} starts election")
-            self.start_election_process()
+            logging.info(f"Replica {self.replica_id} starts listening")
+            self.check_alive_thread = threading.Thread(target=self.check_leader)
+            self.check_alive_thread.start()
+            self.listen()
+    
+    def proclamate_leader(self):
+        self.send_message_to_all("COORDINATOR")
+        self.leader_id.set(self.replica_id)
+        self.is_leader = True
+        self.election_in_process.set(False)
+        # LLAMADO A HACER LAS TAREAS DEL LIDER
 
-        return 0
+    def get_msg(self):
+        pair = self.receiver_queue.get()
+        msg = pair[0].decode()
+        addr = pair[1]
+        msg_from_replica = int(addr[1])-5000
+        return msg, addr, msg_from_replica
+
+    def win_election(self):
+        with self.election_start_time_lock:
+            if self.election_start_time == None: return False
+            return time.time() - self.election_start_time > WAIT_TIME
+    
+    def set_checkpoint(self):
+        with self.last_response_lock:
+            self.leader_last_response_time = time.time()
+    
+    def set_election_start(self, value):
+        with self.election_start_time_lock:
+            self.election_start_time = value
+
+    def listen(self):
+        while True:
+
+            winner = self.win_election()
+            if not self.receiver_queue.empty() or winner:
+
+                if winner:
+                    print("Gano la eleccion")
+                    self.set_election_start(None)
+                    self.proclamate_leader()
+                    continue
+                
+                msg, addr, msg_from_replica = self.get_msg()
+                if msg == "COORDINATOR":
+                    self.set_checkpoint()
+                    self.leader_id.set(msg_from_replica)
+                    self.election_in_process.set(False)
+                    self.is_leader = False
+                    print(f"Replica {msg_from_replica} is the new leader.")
+
+                    print(f"Control : lider {self.leader_id.get()}, elec in proc {self.election_in_process.get()}, is_lider {self.is_leader}")
+
+                elif msg == "ELECTION":
+                    print("Recibo election de ", addr)
+                    self.leader_id.set(None)
+                    self.send_message_to_higher_replicas("ELECTION")
+                    self.set_election_start(time.time())
+                    self.election_in_process.set(True)
+
+                    if self.replica_id > msg_from_replica:
+                        self.sender_queue.put(("ANSWER", addr))
+                        
+                
+                elif msg == "ALIVE?":
+                    self.sender_queue.put(("ALIVE", addr))
+                    # print("Response alive")
+                
+                elif msg == "ALIVE":
+                    self.set_checkpoint()
+
+                elif msg == "ANSWER":
+                    self.set_election_start(None)
+                
+
+    def new_election(self):
+        self.election_in_process.set(True)
+        self.leader_id.set(None)
+        self.send_message_to_higher_replicas("ELECTION")
+        self.set_election_start(time.time())
+
+    def check_leader(self):
+        while True:
+            if self.election_in_process.get():
+                continue
+
+            if self.is_leader:
+                continue
+            
+            if not self.leader_id.get():
+                self.new_election()
+                continue
+
+            with self.last_response_lock:
+                if time.time() - self.leader_last_response_time > self.leader_timeout_threshold and self.leader_id.get() is not None:
+                    print(f"Leader {self.leader_id.get()} is down. New leader election")
+                    self.new_election()
+
+            leader = self.leader_id.get()
+            if leader is not None:
+                self.sender_queue.put(("ALIVE?", ('monitor'+str(leader), 5000+leader)))
+            time.sleep(1)
+
+    def send_message_to_higher_replicas(self, message):
+        for replica in self.replicas:
+            if replica > self.replica_id:
+                self.sender_queue.put((message, ('monitor'+str(replica), 5000+replica)))
+
+    def send_message_to_all(self, message):
+        for replica in self.replicas:
+            self.sender_queue.put((message, ('monitor'+str(replica), 5000+replica)))
+            # self.write(message, ('monitor'+str(replica), 5000+replica))

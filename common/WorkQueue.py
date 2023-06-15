@@ -25,6 +25,10 @@ class WorkQueue():
         except Exception as e:
             logging.error(f"Work Queue: Error on callback {e}")
 
+
+    # def send_ack(self, ack_list):
+    #     self.channel.basic_ack(delivery_tag=ack_list)
+
     def send(self, message):
         try:
             self.channel.basic_publish(exchange='',

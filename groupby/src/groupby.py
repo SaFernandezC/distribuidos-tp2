@@ -23,6 +23,11 @@ class Groupby:
 
         self.group_table = {}
 
+        self.tags_to_ack = []  # [messages]
+        self.ids_processed = {}  # {Client_id: [ids]}
+        
+
+
     def _handle_sigterm(self, *args):
         """
         Handles SIGTERM signal
@@ -78,19 +83,49 @@ class Groupby:
             key_dict = self._check_key_len(self.key, item)
             self.agg_function(key_dict, item, self.group_table[client_id])
 
+    
+    # def add_message_id(self, batch, client_id):
+    #     message_id = hash(batch)
+
+    #     if not self.ids_proccesed[client_id]:
+    #         self.ids_processed[client_id] = []
+        
+    #     already_added = message_id in self.ids_proccesed[client_id]
+        
+    #     if not already_added:
+    #         self.ids_proccesed[client_id].append(message_id)
+
+    #     return already_added
+
+
     def _callback(self, body):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
-        # print(batch)
+
+        # duplicated = self.add_message_id(self, batch, client_id)
+        # if duplicated:
+        #     return
+
         if "eof" in batch:
-            # self.connection.stop_consuming()
             function = eval(self.send_data_function)
             filtered = function(self.group_table[client_id])
             self.output_queue.send(json.dumps({"client_id": client_id, "query": self.query, "results": filtered}))
+        # elif "clean" in batch:
+        #     self.ids_processed.pop(client_id, None)
+        #     self.group_table.pop(client_id, None)
         else:
-            self._group(client_id, batch["data"])   
-            # for line in batch["data"]:
-            #     self._group(line)
+            self._group(client_id, batch["data"])
+        
+        # Bajo A Disco group table/ids
+        # {
+        #     "group_table": self.group_table,
+        #     "ids_processed": self.ids_processed
+        # }
+
+        # ACK
+
+        
+        
 
     def run(self):
         self.input_queue.receive(self._callback)

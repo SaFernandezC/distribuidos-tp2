@@ -4,13 +4,14 @@ from .utils import default, find_dup_trips_year, find_stations_query_3
 import signal
 import logging
 
+
 class Groupby:
 
     def __init__(self, input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function):
-        
+
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
-        
+
         self.key = self._parse_key(primary_key)
         self.agg_function = self._define_agg(agg)
         self.field_to_agregate = field_to_agregate
@@ -25,7 +26,6 @@ class Groupby:
 
         self.tags_to_ack = []  # [messages]
         self.ids_processed = {}  # {Client_id: [ids]}
-        
 
 
     def _handle_sigterm(self, *args):
@@ -83,49 +83,58 @@ class Groupby:
             key_dict = self._check_key_len(self.key, item)
             self.agg_function(key_dict, item, self.group_table[client_id])
 
-    
-    # def add_message_id(self, batch, client_id):
-    #     message_id = hash(batch)
 
+    # def add_message_id(self, message_id, client_id):
     #     if not self.ids_proccesed[client_id]:
     #         self.ids_processed[client_id] = []
-        
+
     #     already_added = message_id in self.ids_proccesed[client_id]
-        
+
     #     if not already_added:
     #         self.ids_proccesed[client_id].append(message_id)
 
     #     return already_added
+
+    #def ack(self, forced):
+        #if len(self.tags_to_ack) > MESSAGES_BATCH or forced:
+            # Bajo A Disco group table/ids
+            # {
+            #     "group_table": self.group_table,
+            #     "ids_processed": self.ids_processed,
+            # }
+            # send_ack
+            # self.tags_to_ack = []
 
 
     def _callback(self, body):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
 
-        # duplicated = self.add_message_id(self, batch, client_id)
+        # message_id = hash(batch)
+        # #self.tags_to_ack.append(tag)
+        # duplicated = self.add_message_id(self, message_id, client_id)
         # if duplicated:
+        #     #self.ack()
         #     return
 
         if "eof" in batch:
             function = eval(self.send_data_function)
             filtered = function(self.group_table[client_id])
             self.output_queue.send(json.dumps({"client_id": client_id, "query": self.query, "results": filtered}))
-        # elif "clean" in batch:
-        #     self.ids_processed.pop(client_id, None)
-        #     self.group_table.pop(client_id, None)
         else:
             self._group(client_id, batch["data"])
-        
+
+        # if "clean" in batch or "eof" in batch:
+        #     self.ids_processed.pop(client_id, None)
+        #     self.group_table.pop(client_id, None)
+
         # Bajo A Disco group table/ids
         # {
         #     "group_table": self.group_table,
-        #     "ids_processed": self.ids_processed
+        #     "ids_processed": self.ids_processed,
         # }
 
-        # ACK
-
-        
-        
+        # #self.ack()
 
     def run(self):
         self.input_queue.receive(self._callback)

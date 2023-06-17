@@ -63,7 +63,7 @@ class DateModifier():
         else:
             return False
 
-    def _callback(self, body):
+    def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
         if "eof" in batch:
@@ -73,6 +73,7 @@ class DateModifier():
             for item in batch["data"]:
                 item['date'] = self._restar_dia(item['date'])
             self.output_queue.send(json.dumps({"client_id": client_id, "data":batch["data"]}))
+        self.input_queue.ack(ack_tag)
     
     def run(self):
         self.input_queue.receive(self._callback)

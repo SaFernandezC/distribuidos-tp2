@@ -23,7 +23,7 @@ class DistanceCalculator:
         logging.info('SIGTERM received - Shutting server down')
         self.connection.close()
 
-    def _callback(self, body):
+    def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
         if "eof" in batch:
@@ -36,6 +36,7 @@ class DistanceCalculator:
                 res = {"end_name": item["end_name"], "distance": distance}
                 data.append(res)
             self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
+        self.input_queue.ack(ack_tag)
 
     
     def run(self):

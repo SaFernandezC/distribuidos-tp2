@@ -3,7 +3,6 @@ from src.monitor import Monitor
 import logging
 import os
 
-
 def initialize_config():
     config = ConfigParser(os.environ)
     # If config.ini does not exists original config object is not modified
@@ -15,9 +14,6 @@ def initialize_config():
         config_params["node_id"] = int(os.getenv('NODE_ID', config["DEFAULT"]["NODE_ID"]))
         config_params["nodes_id"] = os.getenv('NODES_ID', config["DEFAULT"]["NODES_ID"])
         config_params["port"] = int(os.getenv('PORT', config["DEFAULT"]["PORT"]))
-        # config_params["input_queue_name"] = config.get("DEFAULT", "INPUT_QUEUE_NAME", fallback=None)
-        # config_params["output_exchange"] = config.get("DEFAULT", "OUTPUT_EXCHANGE", fallback=None)
-        # config_params["output_exchange_type"] = config.get("DEFAULT", "OUTPUT_EXCHANGE_TYPE", fallback=None)
 
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting packet-distributor".format(e))
@@ -44,7 +40,7 @@ def main():
         monitor = Monitor(node_id, nodes_id)
         monitor.run()
     except OSError as e:
-        logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')
+        logging.error(f'action: initialize_monitor | result: fail | error: {e}')
 
 def initialize_log(logging_level):
     """

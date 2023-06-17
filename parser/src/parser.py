@@ -25,7 +25,7 @@ class Parser():
         logging.info('SIGTERM received - Shutting server down')
         self.connection.close()
 
-    def _callback(self, body):
+    def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
         if "eof" in batch:

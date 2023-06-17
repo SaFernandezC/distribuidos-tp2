@@ -4,6 +4,7 @@ import time
 import logging
 import multiprocessing
 from .utils import AtomicValue
+from .heartBeat import HartBeat
 
 class Sender:
     def __init__(self, skt, queue):
@@ -31,7 +32,7 @@ class Receiver:
                 pair = self.skt.recvfrom(1024)
                 self.queue.put(pair)
         except Exception as e:
-            logging.error("Sender: error sending message | error: {}".format(e))
+            logging.error("Sender: error receiving message | error: {}".format(e))
 
 WAIT_TIME = 10
 
@@ -64,6 +65,8 @@ class Monitor:
         self.election_start_time_lock = threading.Lock() # Hacer un AtomicValue
         self.election_start_time = None
 
+        self.heartBeat = None
+
 
     def run(self):
         if self.replica_id == 3:
@@ -83,6 +86,8 @@ class Monitor:
         self.is_leader = True
         self.election_in_process.set(False)
         # LLAMADO A HACER LAS TAREAS DEL LIDER
+        self.heartBeat = threading.Thread(target=HartBeat().run).start()
+
 
     def get_msg(self):
         pair = self.receiver_queue.get()
@@ -111,35 +116,30 @@ class Monitor:
             if not self.receiver_queue.empty() or winner:
 
                 if winner:
-                    print("Gano la eleccion")
                     self.set_election_start(None)
                     self.proclamate_leader()
                     continue
                 
                 msg, addr, msg_from_replica = self.get_msg()
                 if msg == "COORDINATOR":
+                    # TODO: Si yo era lider joinear mi self.hartBeat()
                     self.set_checkpoint()
                     self.leader_id.set(msg_from_replica)
                     self.election_in_process.set(False)
                     self.is_leader = False
                     print(f"Replica {msg_from_replica} is the new leader.")
 
-                    print(f"Control : lider {self.leader_id.get()}, elec in proc {self.election_in_process.get()}, is_lider {self.is_leader}")
-
                 elif msg == "ELECTION":
-                    print("Recibo election de ", addr)
                     self.leader_id.set(None)
                     self.send_message_to_higher_replicas("ELECTION")
                     self.set_election_start(time.time())
                     self.election_in_process.set(True)
 
                     if self.replica_id > msg_from_replica:
-                        self.sender_queue.put(("ANSWER", addr))
-                        
+                        self.sender_queue.put(("ANSWER", addr))   
                 
                 elif msg == "ALIVE?":
                     self.sender_queue.put(("ALIVE", addr))
-                    # print("Response alive")
                 
                 elif msg == "ALIVE":
                     self.set_checkpoint()
@@ -157,12 +157,14 @@ class Monitor:
     def check_leader(self):
         while True:
             if self.election_in_process.get():
+                time.sleep(1)
                 continue
 
             if self.is_leader:
+                time.sleep(1)
                 continue
             
-            if not self.leader_id.get():
+            if self.leader_id.get() is not None:
                 self.new_election()
                 continue
 
@@ -184,4 +186,3 @@ class Monitor:
     def send_message_to_all(self, message):
         for replica in self.replicas:
             self.sender_queue.put((message, ('monitor'+str(replica), 5000+replica)))
-            # self.write(message, ('monitor'+str(replica), 5000+replica))

@@ -24,7 +24,7 @@ class StatusController:
         logging.info('SIGTERM received - Shutting server down')
         self.connection.close()
         
-    def _callback(self, body):
+    def _callback(self, body, ack_tag):
         line = json.loads(body.decode())
         client_id = line["client_id"]
         
@@ -37,6 +37,7 @@ class StatusController:
         if len(self.data[client_id]) == self.qty_of_queries:
             self.output_queue.send(json.dumps(self.data))
             print(f"Resultado de cliente {client_id}: ", self.data)
+        self.input_queue.ack(ack_tag)
     
     def run(self):
         self.input_queue.receive(self._callback)

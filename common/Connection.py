@@ -20,7 +20,7 @@ class Connection:
     def Publisher(self, exchange_name, exchange_type):
         return ExchangeQueue("pub", self.channel, exchange_name, exchange_type)
 
-    def Subscriber(self, exchange_name, exchange_type, queue_name=None, routing_keys=None):
+    def Subscriber(self, exchange_name, exchange_type, queue_name, routing_keys=None):
         return ExchangeQueue("sub", self.channel, exchange_name, exchange_type, queue_name, routing_keys)
 
     def EofProducer(self, output_exchange, output_queue, input_queue):

@@ -6,365 +6,365 @@ networks:
       - subnet: 172.25.125.0/24
       driver: default
 services:
-  monitor1:
-    container_name: monitor1
-    environment:
-      - PYTHONUNBUFFERED=1
-      - NODE_ID=1
-      - NODES_ID=[2,3]
-      - PORT=5001
-    image: monitor:latest
-    networks:
-      - testing_net
-    restart: on-failure 
+  # monitor1:
+  #   container_name: monitor1
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - NODE_ID=1
+  #     - NODES_ID=[2,3]
+  #     - PORT=5001
+  #   image: monitor:latest
+  #   networks:
+  #     - testing_net
+  #   restart: on-failure 
 
-  monitor2:
-    container_name: monitor2
-    environment:
-      - PYTHONUNBUFFERED=1
-      - NODE_ID=2
-      - NODES_ID=[1,3]
-      - PORT=5002
-    image: monitor:latest
-    networks:
-      - testing_net
-    restart: on-failure 
+  # monitor2:
+  #   container_name: monitor2
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - NODE_ID=2
+  #     - NODES_ID=[1,3]
+  #     - PORT=5002
+  #   image: monitor:latest
+  #   networks:
+  #     - testing_net
+  #   restart: on-failure 
 
-  monitor3:
-    container_name: monitor3
-    environment:
-      - PYTHONUNBUFFERED=1
-      - NODE_ID=3
-      - NODES_ID=[1,2]
-      - PORT=5003
-    image: monitor:latest
-    networks:
-      - testing_net
-    restart: on-failure 
+  # monitor3:
+  #   container_name: monitor3
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - NODE_ID=3
+  #     - NODES_ID=[1,2]
+  #     - PORT=5003
+  #   image: monitor:latest
+  #   networks:
+  #     - testing_net
+  #   restart: on-failure 
 
-  # accepter:
-  #   container_name: accepter
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: accepter:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  # date_modifier:
-  #   depends_on:
-  #   - prectot_filter
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: date_modifier:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./date_modifier/config.ini:/config.ini
-  # distance_calculator:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: distance_calculator:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./distance_calculator/config.ini:/config.ini
-  # eof_manager:
-  #   container_name: eof_manager
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: eof_manager:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  # filter_stations_query2:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: filter:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./filter/config/config_filter_station_2.ini:/config.ini
-  # filter_stations_query3:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: filter:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./filter/config/config_filter_station_3.ini:/config.ini
-  # filter_trips_query1:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: filter:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./filter/config/config_filter_trips_1.ini:/config.ini
-  # filter_trips_query3:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: filter:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./filter/config/config_filter_trips_3.ini:/config.ini
-  # filter_trips_year:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: filter:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./filter/config/config_filter_trips_2.ini:/config.ini
-  # groupby_query_1:
-  #   container_name: groupby_query_1
-  #   depends_on:
-  #   - joiner_query_1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: groupby:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./groupby/config/config_groupby_1.ini:/config.ini
-  # groupby_query_2:
-  #   container_name: groupby_query_2
-  #   depends_on:
-  #   - joiner_query_2
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: groupby:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./groupby/config/config_groupby_2.ini:/config.ini
-  # groupby_query_3:
-  #   container_name: groupby_query_3
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: groupby:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./groupby/config/config_groupby_3.ini:/config.ini
-  # joiner_query_1:
-  #   depends_on:
-  #   - date_modifier
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: joiner:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./joiner/config/config_joiner_1.ini:/config.ini
-  # joiner_query_2:
-  #   depends_on:
-  #   - filter_stations_query2
-  #   - filter_trips_year
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: joiner:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./joiner/config/config_joiner_2.ini:/config.ini
-  # joiner_query_3:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: joiner:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./joiner/config/config_joiner_3.ini:/config.ini
-  # prectot_filter:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: filter:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./filter/config/config_filter_weather_1.ini:/config.ini
-  # rabbitmq:
-  #   build:
-  #     context: ./rabbitmq
-  #     dockerfile: rabbitmq.dockerfile
-  #   environment:
-  #   - RABBITMQ_LOGS=-
-  #   healthcheck:
-  #     interval: 10s
-  #     retries: 10
-  #     test:
-  #     - CMD
-  #     - curl
-  #     - -f
-  #     - http://localhost:15672
-  #     timeout: 5s
-  #   networks:
-  #   - testing_net
-  #   ports:
-  #   - 15672:15672
-  # station_parser:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: parser:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./parser/config/config_station_parser.ini:/config.ini
-  # status_controller:
-  #   container_name: status_controller
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: status_controller:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./status_controller/config.ini:/config.ini
-  # trip_parser:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: parser:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./parser/config/config_trip_parser.ini:/config.ini
-  # weather_parser:
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   deploy:
-  #     replicas: 1
-  #   environment:
-  #   - PYTHONUNBUFFERED=1
-  #   image: parser:latest
-  #   links:
-  #   - rabbitmq
-  #   networks:
-  #   - testing_net
-  #   restart: on-failure
-  #   volumes:
-  #   - ./parser/config/config_weather_parser.ini:/config.ini
+  accepter:
+    container_name: accepter
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: accepter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+  date_modifier:
+    depends_on:
+    - prectot_filter
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: date_modifier:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./date_modifier/config.ini:/config.ini
+  distance_calculator:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: distance_calculator:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./distance_calculator/config.ini:/config.ini
+  eof_manager:
+    container_name: eof_manager
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: eof_manager:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+  filter_stations_query2:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./filter/config/config_filter_station_2.ini:/config.ini
+  filter_stations_query3:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./filter/config/config_filter_station_3.ini:/config.ini
+  filter_trips_query1:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./filter/config/config_filter_trips_1.ini:/config.ini
+  filter_trips_query3:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./filter/config/config_filter_trips_3.ini:/config.ini
+  filter_trips_year:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./filter/config/config_filter_trips_2.ini:/config.ini
+  groupby_query_1:
+    container_name: groupby_query_1
+    depends_on:
+    - joiner_query_1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: groupby:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./groupby/config/config_groupby_1.ini:/config.ini
+  groupby_query_2:
+    container_name: groupby_query_2
+    depends_on:
+    - joiner_query_2
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: groupby:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./groupby/config/config_groupby_2.ini:/config.ini
+  groupby_query_3:
+    container_name: groupby_query_3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: groupby:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./groupby/config/config_groupby_3.ini:/config.ini
+  joiner_query_1:
+    depends_on:
+    - date_modifier
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: joiner:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./joiner/config/config_joiner_1.ini:/config.ini
+  joiner_query_2:
+    depends_on:
+    - filter_stations_query2
+    - filter_trips_year
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: joiner:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./joiner/config/config_joiner_2.ini:/config.ini
+  joiner_query_3:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: joiner:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./joiner/config/config_joiner_3.ini:/config.ini
+  prectot_filter:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./filter/config/config_filter_weather_1.ini:/config.ini
+  rabbitmq:
+    build:
+      context: ./rabbitmq
+      dockerfile: rabbitmq.dockerfile
+    environment:
+    - RABBITMQ_LOGS=-
+    healthcheck:
+      interval: 10s
+      retries: 10
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:15672
+      timeout: 5s
+    networks:
+    - testing_net
+    ports:
+    - 15672:15672
+  station_parser:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./parser/config/config_station_parser.ini:/config.ini
+  status_controller:
+    container_name: status_controller
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: status_controller:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./status_controller/config.ini:/config.ini
+  trip_parser:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./parser/config/config_trip_parser.ini:/config.ini
+  weather_parser:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+    environment:
+    - PYTHONUNBUFFERED=1
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./parser/config/config_weather_parser.ini:/config.ini
 version: '3'

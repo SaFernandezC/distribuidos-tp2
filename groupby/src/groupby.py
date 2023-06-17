@@ -24,7 +24,7 @@ class Groupby:
 
         self.group_table = {}
 
-        self.tags_to_ack = []  # [messages]
+        self.tags_to_ack = [] # [messages]
         self.ids_processed = {}  # {Client_id: [ids]}
 
 
@@ -106,7 +106,7 @@ class Groupby:
             # self.tags_to_ack = []
 
 
-    def _callback(self, body):
+    def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
 

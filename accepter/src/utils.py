@@ -10,10 +10,11 @@ class Asker():
         if not self.stopped:
             self.stop()
 
-    def _callback(self, body):
+    def _callback(self, body, ack_tag):
         data = body.decode()
         self.results_queue.put(data)
         self.connection.stop_consuming()
+        self.metrics_queue.ack(ack_tag)
     
     def stop(self):
         self.connection.stop_consuming()

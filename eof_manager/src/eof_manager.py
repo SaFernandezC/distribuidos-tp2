@@ -115,7 +115,7 @@ class EofManager:
         self.exchanges_per_client[client_id] = copy.deepcopy(self.base_exchanges)
         self.work_queues_per_client[client_id] = copy.deepcopy(self.base_work_queues)
 
-    def _callback(self, body):
+    def _callback(self, body, ack_tag):
         line = json.loads(body.decode())
         client_id = line["client_id"]
 
@@ -130,6 +130,7 @@ class EofManager:
 
         if line["type"] == "work_queue":
             self._queue(client_id, line)
+        self.eof_consumer.ack(ack_tag)
 
     def run(self):
         self.eof_consumer.receive(self._callback)

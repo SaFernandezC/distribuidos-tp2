@@ -12,10 +12,12 @@ ASK_DATA = 'A'
 INT_LENGTH = 4
 
 class Client:
-    def __init__(self, id, client_sock, protocol):
+    def __init__(self, id, client_sock, protocol, results, results_lock):
         self.id = id
         self.client_sock = client_sock
         self.protocol = protocol
+        self.results = results
+        self.results_lock = results_lock
 
         self.connection = Connection()
         self.eof_manager = self.connection.EofProducer(None, None, None)
@@ -45,7 +47,12 @@ class Client:
         self.protocol.send_ack(self.client_sock, True)
 
     def ask_for_data(self):
-        self.protocol.send_result(self.client_sock, True)
+        with self.results_lock:
+            print(self.results)
+            if not self.id in self.results:
+                self.protocol.send_result(self.client_sock, False)
+            else:
+                self.protocol.send_result(self.client_sock, True, self.results[self.id])
 
     def run(self):
         while True:

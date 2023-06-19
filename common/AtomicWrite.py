@@ -1,7 +1,6 @@
 import os
 import time
 
-
 def split_file(filename):
     file_dir = os.path.dirname(filename)
     if not os.path.isdir(file_dir):
@@ -57,11 +56,11 @@ def get_current_file(filename):
     return max_file
 
 
-if __name__ == "__main__":
-    try:
-        atomic_write("test.txt", "Hola!")
-        print(get_current_file("test.txt"))
-    except Exception as err:
-        print("Error")
-        print(err)
-    exit = input("Exit")
+# if __name__ == "__main__":
+#     try:
+#         atomic_write("test.txt", "Hola!")
+#         print(get_current_file("test.txt"))
+#     except Exception as err:
+#         print("Error")
+#         print(err)
+#     exit = input("Exit")

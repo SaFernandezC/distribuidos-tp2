@@ -34,6 +34,7 @@ class Parser():
             print(f"RECIBO EOF DE CLEINTE {client_id}-> ENVIO EOF")
         else:
             send(self.output_queue, batch["data"], client_id)
+        self.input_queue.ack(ack_tag)
     
     def run(self):
         self.input_queue.receive(self._callback)

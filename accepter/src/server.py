@@ -29,12 +29,13 @@ class Server:
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
         self.protocol = Protocol()
-
+        self.results = {}
+        self.results_lock = threading.Lock()
         # self.metrics_queue = self.connection.Consumer(queue_name='metrics')
-        # self.results_queue = multiprocessing.Queue()
-        # self.asker = Asker(self.connection, self.metrics_queue, self.results_queue)
-        # self.ask_results = multiprocessing.Process(target=self.asker.run, args=())
+        self.asker = Asker(self.results, self.results_lock)
+        self.ask_results = threading.Thread(target=self.asker.run)
 
+        # self.results_queue = multiprocessing.Queue()
         self.id_counter = self._init_id_counter()
         self.client_threads = []
 
@@ -46,11 +47,11 @@ class Server:
         Main process: starts other processes and iterate accepting new clients.
         After accepting a new client pushes it to clients queue
         """
-        # self.ask_results.start()
+        self.ask_results.start()
         while self.is_alive:
             client_sock = self.__accept_new_connection()
             if client_sock:     
-                client = Client(self.id_counter, client_sock, self.protocol)
+                client = Client(self.id_counter, client_sock, self.protocol, self.results, self.results_lock)
                 thread = threading.Thread(target=client.run)
                 thread.start()
                 self.client_threads.append(thread) # Guardar el cliente tambien?
@@ -83,7 +84,7 @@ class Server:
         """
         self.is_alive = False
         try:
-            # self.ask_results.join()
+            self.ask_results.join()
             self.connection.close()
             self._server_socket.close()
 

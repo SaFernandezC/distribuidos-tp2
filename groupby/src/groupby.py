@@ -3,6 +3,7 @@ import ujson as json
 from .utils import default, find_dup_trips_year, find_stations_query_3
 import signal
 import logging
+from common.AtomicWrite import atomic_write, get_current_file
 
 
 class Groupby:
@@ -84,16 +85,16 @@ class Groupby:
             self.agg_function(key_dict, item, self.group_table[client_id])
 
 
-    # def add_message_id(self, message_id, client_id):
-    #     if not self.ids_proccesed[client_id]:
-    #         self.ids_processed[client_id] = []
+    def add_message_id(self, message_id, client_id):
+        if not self.ids_proccesed[client_id]:
+            self.ids_processed[client_id] = []
 
-    #     already_added = message_id in self.ids_proccesed[client_id]
+        already_added = message_id in self.ids_proccesed[client_id]
 
-    #     if not already_added:
-    #         self.ids_proccesed[client_id].append(message_id)
+        if not already_added:
+            self.ids_proccesed[client_id].append(message_id)
 
-    #     return already_added
+        return already_added
 
     #def ack(self, forced):
         #if len(self.tags_to_ack) > MESSAGES_BATCH or forced:
@@ -111,10 +112,10 @@ class Groupby:
         client_id = batch["client_id"]
 
         # message_id = hash(batch)
-        # #self.tags_to_ack.append(tag)
+        # self.tags_to_ack.append(ack_tag)
         # duplicated = self.add_message_id(self, message_id, client_id)
         # if duplicated:
-        #     #self.ack()
+        #     self.input_queue.ack(ack_tag)
         #     return
 
         if "eof" in batch:
@@ -129,12 +130,12 @@ class Groupby:
         #     self.group_table.pop(client_id, None)
 
         # Bajo A Disco group table/ids
-        # {
+        # data = {
         #     "group_table": self.group_table,
         #     "ids_processed": self.ids_processed,
         # }
-
-        # #self.ack()
+        # atomic_write(json.dumps({data}))
+        self.input_queue.ack(ack_tag)
 
     def run(self):
         self.input_queue.receive(self._callback)

@@ -78,18 +78,18 @@ def main():
         client.send_trips(trips)
 
         ready = False
-        # while not ready:
-        #     ready, data = client.ask_results()
-        #     logging.info("Waiting for data")
-        #     time.sleep(2)
+        while not ready:
+            ready, data = client.ask_results()
+            logging.info("Waiting for data")
+            time.sleep(2)
         
-        # logging.info("Data ready")
-        # print("Query1: ", data["query1"])
-        # print("*------------------*")
-        # print("Query2: ", data["query2"])
-        # print("*------------------*")
-        # print("Query3: ", data["query3"])
-        ready, data = client.ask_results()
+        logging.info("Data ready")
+        print("Query1: ", data["query1"])
+        print("*------------------*")
+        print("Query2: ", data["query2"])
+        print("*------------------*")
+        print("Query3: ", data["query3"])
+        # ready, data = client.ask_results()
         client.send_finish()
     except Exception as e:
         logging.error("Error: {}".format(e))

@@ -52,12 +52,10 @@ class ExchangeQueue():
             logging.error(f"Exchange Queue: Error on callback -> {e}")
 
     def ack(self, ack_element):
-        print(ack_element)
         try:
             if isinstance(ack_element, list):
                 self.channel.basic_ack(delivery_tag=ack_element[-1], multiple=True)
             elif isinstance(ack_element, int):
-                print(f"Acked: {ack_element}")
                 self.channel.basic_ack(delivery_tag=ack_element)
             else:
                 raise Exception(f"Not Valid ACK Element {ack_element}")

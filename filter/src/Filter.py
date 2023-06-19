@@ -95,7 +95,6 @@ class Filter:
     def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
-        print(ack_tag)
         if "eof" in batch:
             # self.connection.stop_consuming()
             self.eof_manager.send_eof(client_id)
@@ -114,6 +113,5 @@ class Filter:
                 if filtered:
                     data.append(self.select(item))
             self.output_queue.send(json.dumps({"client_id":client_id, "data":data}))
-        print("Vamos a ACK")
+        
         self.input_queue.ack(ack_tag)
-        print("ACK Hecho")

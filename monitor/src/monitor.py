@@ -5,6 +5,7 @@ import logging
 import multiprocessing
 from .utils import AtomicValue
 from .heartBeat import HartBeat
+import signal
 
 class Sender:
     def __init__(self, skt, queue):
@@ -65,7 +66,10 @@ class Monitor:
         self.election_start_time_lock = threading.Lock() # Hacer un AtomicValue
         self.election_start_time = None
 
-        self.heartBeat = None
+        self.heartbeat_thread = None
+
+        self.alive = True
+        signal.signal(signal.SIGTERM, self._handle_sigterm)
 
 
     def run(self):
@@ -86,7 +90,8 @@ class Monitor:
         self.is_leader = True
         self.election_in_process.set(False)
         # LLAMADO A HACER LAS TAREAS DEL LIDER
-        self.heartBeat = threading.Thread(target=HartBeat().run).start()
+        self.heartbeat_thread = threading.Thread(target=HartBeat().run).start()
+        logging.info(f"Starts leader duties")
 
 
     def get_msg(self):
@@ -127,7 +132,7 @@ class Monitor:
                     self.leader_id.set(msg_from_replica)
                     self.election_in_process.set(False)
                     self.is_leader = False
-                    print(f"Replica {msg_from_replica} is the new leader.")
+                    logging.info(f"Replica {msg_from_replica} is the new leader.")
 
                 elif msg == "ELECTION":
                     self.leader_id.set(None)
@@ -149,6 +154,7 @@ class Monitor:
                 
 
     def new_election(self):
+        logging.info(f"New Election")
         self.election_in_process.set(True)
         self.leader_id.set(None)
         self.send_message_to_higher_replicas("ELECTION")
@@ -164,7 +170,7 @@ class Monitor:
                 time.sleep(1)
                 continue
             
-            if self.leader_id.get() is not None:
+            if self.leader_id.get() is None:
                 self.new_election()
                 continue
 
@@ -186,3 +192,20 @@ class Monitor:
     def send_message_to_all(self, message):
         for replica in self.replicas:
             self.sender_queue.put((message, ('monitor'+str(replica), 5000+replica)))
+
+
+    def _handle_sigterm(self, *args):
+        """
+        Handles SIGTERM signal
+        """
+        logging.info('SIGTERM received - Shutting server down')
+        self.stop()
+
+    def stop(self):
+        try:
+            self.alive = False
+            self.sender_thread.join()
+            self.receiver_thread.join()
+            self.heartbeat_thread.join()
+        except Exception as e:
+            logging.error(f"Error stopping monitor | error {e}")

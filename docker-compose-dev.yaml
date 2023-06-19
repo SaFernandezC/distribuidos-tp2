@@ -6,41 +6,50 @@ networks:
       - subnet: 172.25.125.0/24
       driver: default
 services:
-  # monitor1:
-  #   container_name: monitor1
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - NODE_ID=1
-  #     - NODES_ID=[2,3]
-  #     - PORT=5001
-  #   image: monitor:latest
-  #   networks:
-  #     - testing_net
-  #   restart: on-failure 
+  monitor1:
+    container_name: monitor1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=1
+      - NODES_ID=[2,3]
+      - PORT=5001
+    image: monitor:latest
+    networks:
+      - testing_net
+    restart: on-failure 
 
-  # monitor2:
-  #   container_name: monitor2
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - NODE_ID=2
-  #     - NODES_ID=[1,3]
-  #     - PORT=5002
-  #   image: monitor:latest
-  #   networks:
-  #     - testing_net
-  #   restart: on-failure 
+  monitor2:
+    container_name: monitor2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=2
+      - NODES_ID=[1,3]
+      - PORT=5002
+    image: monitor:latest
+    networks:
+      - testing_net
+    restart: on-failure 
 
-  # monitor3:
-  #   container_name: monitor3
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - NODE_ID=3
-  #     - NODES_ID=[1,2]
-  #     - PORT=5003
-  #   image: monitor:latest
-  #   networks:
-  #     - testing_net
-  #   restart: on-failure 
+  monitor3:
+    container_name: monitor3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=3
+      - NODES_ID=[1,2]
+      - PORT=5003
+    image: monitor:latest
+    networks:
+      - testing_net
+    restart: on-failure 
 
   accepter:
     container_name: accepter

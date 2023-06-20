@@ -17,4 +17,3 @@ def get_docker_id():
         return container_id
 
     return None
-

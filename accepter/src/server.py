@@ -24,7 +24,7 @@ class Server:
         self._server_socket = Socket()
         self._server_socket.bind('', port)
         self._server_socket.listen(listen_backlog)
-        
+
         self.is_alive = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
@@ -41,7 +41,7 @@ class Server:
 
     def _init_id_counter(self):
         return 0
-    
+
     def run(self):
         """
         Main process: starts other processes and iterate accepting new clients.
@@ -50,7 +50,7 @@ class Server:
         self.ask_results.start()
         while self.is_alive:
             client_sock = self.__accept_new_connection()
-            if client_sock:     
+            if client_sock:
                 client = Client(self.id_counter, client_sock, self.protocol, self.results, self.results_lock)
                 thread = threading.Thread(target=client.run)
                 thread.start()

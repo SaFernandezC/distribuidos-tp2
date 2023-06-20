@@ -4,14 +4,14 @@ import time
 import logging
 import multiprocessing
 from .utils import AtomicValue
-from .heartBeat import HartBeat
+from .HeartBeatChecker import HeartBeatChecker
 import signal
 
 class Sender:
     def __init__(self, skt, queue):
-        self.queue = queue    
-        self.skt = skt    
-    
+        self.queue = queue
+        self.skt = skt
+
     def run(self):
         while True:
             try:
@@ -83,14 +83,14 @@ class Monitor:
             self.check_alive_thread = threading.Thread(target=self.check_leader)
             self.check_alive_thread.start()
             self.listen()
-    
+
     def proclamate_leader(self):
         self.send_message_to_all("COORDINATOR")
         self.leader_id.set(self.replica_id)
         self.is_leader = True
         self.election_in_process.set(False)
         # LLAMADO A HACER LAS TAREAS DEL LIDER
-        self.heartbeat_thread = threading.Thread(target=HartBeat().run).start()
+        self.heartbeat_thread = threading.Thread(target=HeartBeatChecker().run).start()
         logging.info(f"Starts leader duties")
 
 

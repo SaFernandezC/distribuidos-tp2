@@ -68,7 +68,7 @@ class Joiner():
                 self.eof_received.append(client_id)
         else:
             self._add_item(client_id, batch["data"])
-            
+
         self.input_queue1.ack(ack_tag)
 
     def _select(self, row):
@@ -99,7 +99,7 @@ class Joiner():
                 if joined:
                     data.append(self._select(res))
             self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
-        
+
         self.input_queue2.ack(ack_tag)
 
     def run(self):

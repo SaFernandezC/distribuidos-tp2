@@ -46,7 +46,7 @@ class WorkQueue():
             elif isinstance(ack_element, int):
                 self.channel.basic_nack(delivery_tag=ack_element)
             else:
-                raise Exception(f"Not Valid ACK Element {ack_element}")                
+                raise Exception(f"Not Valid ACK Element {ack_element}")
         except Exception as e:
             logging.error(f"Work Queue: Error sending nack {e}")
 

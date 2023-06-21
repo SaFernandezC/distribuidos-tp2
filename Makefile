@@ -16,6 +16,7 @@ docker-image:
 	docker build -f ./status_controller/Dockerfile -t "status_controller:latest" .
 	docker build -f ./eof_manager/Dockerfile -t "eof_manager:latest" .
 	docker build -f ./monitor/Dockerfile -t "monitor:latest" .
+	docker build -f ./dev/Dockerfile -t "dev:latest" .
 .PHONY: docker-image
 
 docker-compose-up: docker-image

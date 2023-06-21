@@ -1,5 +1,6 @@
 import os
 import time
+import json
 
 def split_file(filename):
     file_dir = os.path.dirname(filename)
@@ -54,6 +55,17 @@ def get_current_file(filename):
                 max_file = f"{file_dir}/{file}"
 
     return max_file
+
+def load_memory(filename, encoding="utf-8"):
+    file = get_current_file(filename)
+    print(f"FILE: {file}")
+    if not file:
+        return {}
+    
+    with open(file, "r", encoding=encoding) as f:
+        return json.load(f)
+
+
 
 
 # if __name__ == "__main__":

@@ -18,7 +18,6 @@ class Asker():
 
     def _callback(self, body, ack_tag):
         body = json.loads(body.decode())
-        print(body)
         with self.results_lock:
             self.results[body["client_id"]] = body["data"]
             

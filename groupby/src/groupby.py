@@ -1,10 +1,12 @@
 from common.Connection import Connection
-import ujson as json
+# import ujson as json
+import json
 from .utils import default, find_dup_trips_year, find_stations_query_3
 import signal
 import logging
-from common.AtomicWrite import atomic_write, get_current_file
-
+from common.AtomicWrite import atomic_write, load_memory
+import sys
+from hashlib import sha256
 
 class Groupby:
 
@@ -27,6 +29,19 @@ class Groupby:
 
         self.tags_to_ack = [] # [messages]
         self.ids_processed = {}  # {Client_id: [ids]}
+
+        self.msg_counter = 0
+        self.get_previous_state()
+
+
+    def get_previous_state(self):
+        previous_state = load_memory("./data.txt")
+        self.group_table = previous_state.get('group_table', {})
+        self.ids_processed = previous_state.get('ids_processed', {})
+        print(f"GT: {self.group_table}")
+        for key in self.ids_processed.keys():
+            print(f"KEY: {key} | TYPE: {type(key)}")
+        print(f"ids: {self.ids_processed}")
 
 
     def _handle_sigterm(self, *args):
@@ -86,13 +101,13 @@ class Groupby:
 
 
     def add_message_id(self, message_id, client_id):
-        if not self.ids_proccesed[client_id]:
+        if not client_id in self.ids_processed:
             self.ids_processed[client_id] = []
 
-        already_added = message_id in self.ids_proccesed[client_id]
+        already_added = message_id in self.ids_processed[client_id]
 
         if not already_added:
-            self.ids_proccesed[client_id].append(message_id)
+            self.ids_processed[client_id].append(message_id)
 
         return already_added
 
@@ -108,15 +123,25 @@ class Groupby:
 
 
     def _callback(self, body, ack_tag):
-        batch = json.loads(body.decode())
-        client_id = batch["client_id"]
+        self.msg_counter += 1
 
-        # message_id = hash(batch)
-        # self.tags_to_ack.append(ack_tag)
-        # duplicated = self.add_message_id(self, message_id, client_id)
-        # if duplicated:
-        #     self.input_queue.ack(ack_tag)
-        #     return
+        message_id = int(sha256(body).hexdigest(), 16)
+        print(f"MESSAGE ID: {message_id}")
+
+        print(f"BODY: {body}")
+
+        batch = json.loads(body.decode())
+        client_id = str(batch["client_id"])
+
+        self.tags_to_ack.append(ack_tag)
+        duplicated = self.add_message_id(message_id, client_id)
+        if duplicated:
+            logging.info("Duplicado, mando ack")
+            self.input_queue.ack(ack_tag)
+            # if self.msg_counter == 2:
+            #     sys.exit(-1)
+            return
+
 
         if "eof" in batch:
             function = eval(self.send_data_function)
@@ -130,11 +155,19 @@ class Groupby:
         #     self.group_table.pop(client_id, None)
 
         # Bajo A Disco group table/ids
-        # data = {
-        #     "group_table": self.group_table,
-        #     "ids_processed": self.ids_processed,
-        # }
-        # atomic_write(json.dumps({data}))
+        data = {
+            "group_table": self.group_table,
+            "ids_processed": self.ids_processed
+        }
+     
+        print(f"DATA: {data} | DUMPS: {json.dumps(data)}")
+        if "eof" in batch:
+            print("ME CAIGO")
+            a = 1/0
+            # sys.exit(-1)
+        atomic_write("./data.txt", json.dumps(data))
+
+            
         self.input_queue.ack(ack_tag)
 
     def run(self):

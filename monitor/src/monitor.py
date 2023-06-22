@@ -18,7 +18,6 @@ class Sender:
                 while True:
                     msg = self.queue.get()
                     self.skt.sendto(msg[0].encode(), msg[1])
-                    # print(f"Send {msg[0]}")
             except Exception as e:
                 logging.error("Sender: error sending message | error: {}".format(e))
 
@@ -41,7 +40,7 @@ class Monitor:
     def __init__(self, replica_id, replicas, nodes):
         self.replica_id = replica_id
         self.replicas = replicas
-        self.is_leader = False
+        self.is_leader = AtomicValue(False)
 
         self.leader_id = AtomicValue(None)
         self.election_in_process = AtomicValue(False)
@@ -58,48 +57,37 @@ class Monitor:
         self.receiver_thread = threading.Thread(target=Receiver(self.socket, self.receiver_queue).run)
         self.receiver_thread.start()
 
-        self.checkpoint = 0
-
         self.last_response_lock = threading.Lock() # Hacer un AtomicValue
         self.leader_last_response_time = 0
-        self.leader_timeout_threshold = 5 
+
+        self.leader_timeout_threshold = 5 # USAR CONSTANTE
 
         self.check_alive_thread = None
 
         self.election_start_time_lock = threading.Lock() # Hacer un AtomicValue
         self.election_start_time = None
 
-        self.heartbeat_thread = None
-        self.heartbeat_event = None
-
-        self.alive = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
         self.nodes = nodes
 
+        self.heartbeat_event = threading.Event()
+        self.heartbeat_thread = threading.Thread(target=HeartBeatChecker(self.nodes, self.heartbeat_event).run)
+        self.heartbeat_thread.start()
+
 
     def run(self):
-        if self.replica_id == 3:
-            logging.info(f"Replica {self.replica_id} starts listening")
-            self.check_alive_thread = threading.Thread(target=self.check_leader)
-            self.check_alive_thread.start()
-            self.listen()
-        else:
-            logging.info(f"Replica {self.replica_id} starts listening")
-            self.check_alive_thread = threading.Thread(target=self.check_leader)
-            self.check_alive_thread.start()
-            self.listen()
+        logging.info(f"Replica {self.replica_id} starts listening")
+        self.check_alive_thread = threading.Thread(target=self.check_leader)
+        self.check_alive_thread.start()
+        self.listen()
+
 
     def proclamate_leader(self):
         self.send_message_to_all("COORDINATOR")
         self.leader_id.set(self.replica_id)
-        self.is_leader = True
         self.election_in_process.set(False)
-        
-        # LLAMADO A HACER LAS TAREAS DEL LIDER
-        self.heartbeat_event = threading.Event()
-        heartbeat = HeartBeatChecker(self.nodes)
-        self.heartbeat_thread = multiprocessing.Process(target=heartbeat.run)
-        self.heartbeat_thread.start()
+        self.is_leader.set(True)
+        self.heartbeat_event.set()
         logging.info(f"Starts leader duties")
 
 
@@ -118,6 +106,7 @@ class Monitor:
     def set_checkpoint(self):
             with self.last_response_lock:
                 self.leader_last_response_time = time.time()
+
     def set_election_start(self, value):
             with self.election_start_time_lock:
                 self.election_start_time = value
@@ -135,18 +124,11 @@ class Monitor:
                 
                 msg, addr, msg_from_replica = self.get_msg()
                 if msg == "COORDINATOR":
-                    # TODO: Si yo era lider joinear mi self.hartBeat()
                     self.set_checkpoint()
                     self.leader_id.set(msg_from_replica)
                     self.election_in_process.set(False)
-                    self.is_leader = False
-                    if self.heartbeat_thread:
-                        print("Mato Thread")
-                        self.heartbeat_thread.terminate()
-                        self.heartbeat_thread.join()
-                    else:
-                        print("Nada Para Matar")
-                    self.heartbeat_thread = None
+                    self.is_leader.set(False)
+                    self.heartbeat_event.clear()
                     logging.info(f"Replica {msg_from_replica} is the new leader.")
 
                 elif msg == "ELECTION":
@@ -156,7 +138,7 @@ class Monitor:
                     self.election_in_process.set(True)
 
                     if self.replica_id > msg_from_replica:
-                        self.sender_queue.put(("ANSWER", addr))   
+                        self.sender_queue.put(("ANSWER", addr))
                 
                 elif msg == "ALIVE?":
                     self.sender_queue.put(("ALIVE", addr))
@@ -181,7 +163,7 @@ class Monitor:
                 time.sleep(1)
                 continue
 
-            if self.is_leader:
+            if self.is_leader.get():
                 time.sleep(1)
                 continue
             
@@ -218,7 +200,6 @@ class Monitor:
 
     def stop(self):
         try:
-            self.alive = False
             if self.sender_thread:
                 self.sender_thread.join()
             if self.receiver_thread:

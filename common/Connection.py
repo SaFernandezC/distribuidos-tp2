@@ -25,7 +25,8 @@ class Connection:
 
     def EofProducer(self, output_exchange, output_queue, input_queue):
         return EofQueue(self.channel, output_exchange, output_queue, input_queue)
-# def EofConsumer(self, output_exchange, output_queue, input_queue):
+
+    # def EofConsumer(self, output_exchange, output_queue, input_queue):
     #     return EofQueue(self.channel, output_exchange, output_queue, input_queue)
 
     def start_consuming(self):

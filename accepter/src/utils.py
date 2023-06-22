@@ -13,16 +13,14 @@ class Asker():
     def run(self):
         self.metrics_queue.receive(self._callback)
         self.connection.start_consuming()
-        # if not self.stopped:
-        #     self.stop()
 
     def _callback(self, body, ack_tag):
         body = json.loads(body.decode())
-        print(body)
         with self.results_lock:
             self.results[body["client_id"]] = body["data"]
             
         self.metrics_queue.ack(ack_tag)
+
 def stop(self):
         self.connection.stop_consuming()
         self.connection.close()

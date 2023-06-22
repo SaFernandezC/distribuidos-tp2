@@ -6,6 +6,10 @@ import logging
 import time
 from common.utils import get_docker_id
 
+from common.AtomicWrite import atomic_write, load_memory
+import random
+from hashlib import sha256
+
 
 class Joiner():
     def __init__(self, input_exchange_1, input_exchange_type_1, input_queue_name_2, output_queue_name,
@@ -29,6 +33,18 @@ class Joiner():
         self.joiner_function = joiner_function
 
         self.eof_received = []
+
+        self.tags_to_ack = [] # [messages]
+        self.ids_processed = {}  # {Client_id: [ids]}
+
+        self.get_previous_state()
+
+
+    def get_previous_state(self):
+        previous_state = load_memory("./data.txt")
+        self.side_table = previous_state.get('side_table', {})
+        self.ids_processed = previous_state.get('ids_processed', {})
+        self.eof_received = previous_state.get('eof_received', [])
 
     def _handle_sigterm(self, *args):
         """
@@ -58,16 +74,45 @@ class Joiner():
             
             self.side_table[client_id][tuple(values)] = item
 
+
+    def add_message_id(self, message_id, client_id):
+        if not client_id in self.ids_processed:
+            self.ids_processed[client_id] = []
+
+        already_added = message_id in self.ids_processed[client_id]
+
+        if not already_added:
+            self.ids_processed[client_id].append(message_id)
+
+        return already_added
+
+
     def _callback_queue1(self, body, ack_tag):
+        message_id = int(sha256(body).hexdigest(), 16)
+
         batch = json.loads(body.decode())
-        client_id = batch["client_id"]
-        # print(f"cliente: {client_id} -> {batch}")
+        client_id = str(batch["client_id"])
+        
+        # self.tags_to_ack.append(ack_tag)
+        # duplicated = self.add_message_id(message_id, client_id)
+        # if duplicated:
+        #     self.input_queue1.ack(ack_tag)
+        #     return
+
         if "eof" in batch:
             # Problema de perdida de mensajes si no hay nadie escuchando ahi (solucionado con colas durables y persistente)
             if client_id not in self.eof_received:
                 self.eof_received.append(client_id)
         else:
             self._add_item(client_id, batch["data"])
+
+        # data = {
+        #     "side_table": self.side_table,
+        #     "ids_processed": self.ids_processed,
+        #     "eof_received": self.eof_received
+        # }
+
+        # atomic_write("./data.txt", json.dumps(data))
 
         self.input_queue1.ack(ack_tag)
 
@@ -88,8 +133,7 @@ class Joiner():
             return
 
         if "eof" in batch:
-            print(f"{time.asctime(time.localtime())} RECIBO EOF CALLBACK 2 ---> DEJO DE ESCUCHAR, {batch}")
-            # self.connection.stop_consuming()
+            # print(f"{time.asctime(time.localtime())} RECIBO EOF CALLBACK 2 ---> DEJO DE ESCUCHAR, {batch}")
             self.eof_manager.send_eof(client_id)
         else:
             data = []

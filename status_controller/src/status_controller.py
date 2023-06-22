@@ -37,7 +37,7 @@ class StatusController:
         if len(self.data[client_id]) == self.qty_of_queries:
             data_to_send = {"client_id": client_id, "data": self.data[client_id]}
             self.output_queue.send(json.dumps(data_to_send))
-            # print(f"Resultado de cliente {client_id}: ", self.data[client_id])
+            print(f"Resultado de cliente {client_id}: ", self.data[client_id])
         self.input_queue.ack(ack_tag)
     
     def run(self):

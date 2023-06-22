@@ -5,8 +5,9 @@ from .utils import default, find_dup_trips_year, find_stations_query_3
 import signal
 import logging
 from common.AtomicWrite import atomic_write, load_memory
-import sys
+import random
 from hashlib import sha256
+
 
 class Groupby:
 
@@ -38,10 +39,10 @@ class Groupby:
         previous_state = load_memory("./data.txt")
         self.group_table = previous_state.get('group_table', {})
         self.ids_processed = previous_state.get('ids_processed', {})
-        print(f"GT: {self.group_table}")
-        for key in self.ids_processed.keys():
-            print(f"KEY: {key} | TYPE: {type(key)}")
-        print(f"ids: {self.ids_processed}")
+        # print(f"GT: {self.group_table}")
+        # for key in self.ids_processed.keys():
+        #     print(f"KEY: {key} | TYPE: {type(key)}")
+        # print(f"ids: {self.ids_processed}")
 
 
     def _handle_sigterm(self, *args):
@@ -121,14 +122,17 @@ class Groupby:
             # send_ack
             # self.tags_to_ack = []
 
+    def caer(self):
+        num = random.random()
+        if num <= 0.05:
+            print("ME CAIGO")
+            resultado = 1/0
 
     def _callback(self, body, ack_tag):
-        self.msg_counter += 1
-
         message_id = int(sha256(body).hexdigest(), 16)
-        print(f"MESSAGE ID: {message_id}")
+        # print(f"MESSAGE ID: {message_id}")
 
-        print(f"BODY: {body}")
+        # print(f"BODY: {body}")
 
         batch = json.loads(body.decode())
         client_id = str(batch["client_id"])
@@ -136,18 +140,17 @@ class Groupby:
         self.tags_to_ack.append(ack_tag)
         duplicated = self.add_message_id(message_id, client_id)
         if duplicated:
-            logging.info("Duplicado, mando ack")
             self.input_queue.ack(ack_tag)
-            # if self.msg_counter == 2:
-            #     sys.exit(-1)
             return
 
+        # self.caer()
 
         if "eof" in batch:
             function = eval(self.send_data_function)
             filtered = function(self.group_table[client_id])
             self.output_queue.send(json.dumps({"client_id": client_id, "query": self.query, "results": filtered}))
         else:
+            # self.caer()
             self._group(client_id, batch["data"])
 
         # if "clean" in batch or "eof" in batch:
@@ -159,15 +162,11 @@ class Groupby:
             "group_table": self.group_table,
             "ids_processed": self.ids_processed
         }
-     
-        print(f"DATA: {data} | DUMPS: {json.dumps(data)}")
-        if "eof" in batch:
-            print("ME CAIGO")
-            a = 1/0
-            # sys.exit(-1)
+
+        # self.caer()
         atomic_write("./data.txt", json.dumps(data))
 
-            
+        # self.caer()
         self.input_queue.ack(ack_tag)
 
     def run(self):

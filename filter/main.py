@@ -24,6 +24,7 @@ def initialize_config():
         config_params["output_exchange"] = config.get("DEFAULT", "OUTPUT_EXCHANGE", fallback=None)
         config_params["output_exchange_type"] = config.get("DEFAULT", "OUTPUT_EXCHANGE_TYPE", fallback=None)
         config_params["output_queue_name"] = config.get("DEFAULT", "OUTPUT_QUEUE_NAME", fallback=None)
+        config_params["id"] = os.getenv('ID', None)
 
         raw_filters = []
         for i in range(config_params["amount_filters"]):
@@ -51,6 +52,7 @@ def main():
     output_exchange_type = config_params["output_exchange_type"]
     output_queue_name = config_params["output_queue_name"]
     raw_filters = config_params["raw_filters"]
+    node_id = config_params["id"]
 
     initialize_log(logging_level)
 
@@ -64,7 +66,7 @@ def main():
 
     try:
         filter = Filter(select, raw_filters, amount_filters, operators, input_exchange, input_exchange_type, input_queue,
-                        output_exchange, output_exchange_type, output_queue_name)
+                        output_exchange, output_exchange_type, output_queue_name, node_id)
         filter.run()
     except OSError as e:
         logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')

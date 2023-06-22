@@ -1,0 +1,15 @@
+  joiner_query_1_NODE_ID_HERE:
+    container_name: joiner_query_1_NODE_ID_HERE
+    depends_on:
+    - date_modifier
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=joiner_query_1_NODE_ID_HERE
+    image: joiner:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure.
+    volumes:
+    - ./joiner/config/config_joiner_1.ini:/config.ini

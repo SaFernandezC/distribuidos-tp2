@@ -4,7 +4,7 @@ networks:
     ipam:
       config:
       - subnet: 172.25.125.0/24
-      driver: default
+      driver: defaultz
 services:
   monitor1:
     container_name: monitor1

@@ -1,0 +1,16 @@
+  trip_parser_NODE_ID_HERE:
+    container_name: trip_parser_NODE_ID_HERE
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=trip_parser_NODE_ID_HERE
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure.
+    volumes:
+    - ./parser/config/config_trip_parser.ini:/config.ini

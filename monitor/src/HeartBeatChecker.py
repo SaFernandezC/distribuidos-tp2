@@ -4,18 +4,27 @@ from common.HeartBeater import HEARTBEATS, HEARTBEATS_TOPIC, ALIVE_ASK
 import time
 import docker
 from threading import Thread, Lock
+import logging
 
 TIME_BETWEEN = 20
 DEAD_TIME = 5 * TIME_BETWEEN
 
 
 class HeartBeatChecker():
-    def __init__(self):
+    def __init__(self, nodes_to_check):
         self.connection = Connection()
         self.read_queue = self.connection.Consumer(HEARTBEATS)
         self.send_queue = self.connection.Publisher(HEARTBEATS_TOPIC)
         self.containers_lock = Lock()
         self.containers = {}
+        now = time.time()
+        for node in nodes_to_check:
+            self.containers.update({node: now})
+
+    def restart_container(self, node_id):
+        logging.info(f"Waking up node {node_id}")
+        result = subprocess.run(['docker', 'start', node_id], check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logging.info('Command executed. Result={}. Output={}. Error={}'.format(result.returncode, result.stdout, result.stderr))
 
     def restart_container(self, container_id):
         client = docker.from_env()

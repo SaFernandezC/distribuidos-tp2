@@ -15,6 +15,7 @@ def initialize_config():
         config_params["input_queue_name"] = config.get("DEFAULT", "INPUT_QUEUE_NAME", fallback=None)
         config_params["output_exchange"] = config.get("DEFAULT", "OUTPUT_EXCHANGE", fallback=None)
         config_params["output_exchange_type"] = config.get("DEFAULT", "OUTPUT_EXCHANGE_TYPE", fallback=None)
+        config_params["id"] = os.getenv('ID', None)
 
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting packet-distributor".format(e))
@@ -30,6 +31,7 @@ def main():
     input_queue_name = config_params["input_queue_name"]
     output_exchange = config_params["output_exchange"]
     output_exchange_type = config_params["output_exchange_type"]
+    node_id = config_params["id"]
 
     initialize_log(logging_level)
 
@@ -38,7 +40,7 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     try:
-        date_modifier = DateModifier(input_queue_name, output_exchange, output_exchange_type)
+        date_modifier = DateModifier(input_queue_name, output_exchange, output_exchange_type, node_id)
         date_modifier.run()
     except OSError as e:
         logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')

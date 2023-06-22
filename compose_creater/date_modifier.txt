@@ -1,0 +1,15 @@
+  date_modifier_NODE_ID_HERE:
+    container_name: date_modifier_NODE_ID_HERE
+    depends_on:
+    - prectot_filter
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=date_modifier_NODE_ID_HERE
+    image: date_modifier:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./date_modifier/config.ini:/config.ini

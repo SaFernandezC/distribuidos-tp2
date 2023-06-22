@@ -14,6 +14,7 @@ def initialize_config():
         config_params["node_id"] = int(os.getenv('NODE_ID', config["DEFAULT"]["NODE_ID"]))
         config_params["nodes_id"] = os.getenv('NODES_ID', config["DEFAULT"]["NODES_ID"])
         config_params["port"] = int(os.getenv('PORT', config["DEFAULT"]["PORT"]))
+        config_params["nodes"]= os.getenv('NODES', [])
 
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting packet-distributor".format(e))
@@ -29,6 +30,7 @@ def main():
     node_id = config_params["node_id"] 
     nodes_id = eval(config_params["nodes_id"])
     port = config_params["port"] 
+    nodes = eval(config_params["nodes"])
 
     initialize_log(logging_level)
 
@@ -37,7 +39,7 @@ def main():
     logging.info(f"action: config | result: success | logging_level: {logging_level} | node_id: {node_id} | nodes_id: {nodes_id}")
 
     try:
-        monitor = Monitor(node_id, nodes_id)
+        monitor = Monitor(node_id, nodes_id, nodes)
         monitor.run()
     except OSError as e:
         logging.error(f'action: initialize_monitor | result: fail | error: {e}')

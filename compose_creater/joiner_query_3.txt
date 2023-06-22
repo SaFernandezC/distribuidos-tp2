@@ -1,0 +1,16 @@
+  joiner_query_3_NODE_ID_HERE:
+    container_name: joiner_query_3_NODE_ID_HERE
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=joiner_query_3_NODE_ID_HERE
+    image: joiner:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure.
+    volumes:
+    - ./joiner/config/config_joiner_3.ini:/config.ini

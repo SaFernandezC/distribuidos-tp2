@@ -1,0 +1,16 @@
+  distance_calculator_NODE_ID_HERE:
+    container_name: distance_calculator_NODE_ID_HERE
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=distance_calculator_NODE_ID_HERE
+    image: distance_calculator:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./distance_calculator/config.ini:/config.ini

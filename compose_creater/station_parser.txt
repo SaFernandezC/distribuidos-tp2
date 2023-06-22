@@ -1,0 +1,16 @@
+  station_parser_NODE_ID_HERE:
+    container_name: station_parser_NODE_ID_HERE
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=station_parser_NODE_ID_HERE
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    restart: on-failure
+    volumes:
+    - ./parser/config/config_station_parser.ini:/config.ini

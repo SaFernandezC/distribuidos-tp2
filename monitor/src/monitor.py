@@ -24,9 +24,9 @@ class Sender:
 
 class Receiver:
     def __init__(self, skt, queue):
-        self.queue = queue    
-        self.skt = skt    
-    
+        self.queue = queue
+        self.skt = skt
+
     def run(self):
         try:
             while True:
@@ -38,7 +38,7 @@ class Receiver:
 WAIT_TIME = 10
 
 class Monitor:
-    def __init__(self, replica_id, replicas):
+    def __init__(self, replica_id, replicas, nodes):
         self.replica_id = replica_id
         self.replicas = replicas
         self.is_leader = False
@@ -70,6 +70,7 @@ class Monitor:
 
         self.alive = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
+        self.nodes = nodes
 
 
     def run(self):
@@ -90,7 +91,8 @@ class Monitor:
         self.is_leader = True
         self.election_in_process.set(False)
         # LLAMADO A HACER LAS TAREAS DEL LIDER
-        self.heartbeat_thread = threading.Thread(target=HeartBeatChecker().run).start()
+        heartbeat = HeartBeatChecker(self.nodes)
+        self.heartbeat_thread = threading.Thread(target=heartbeat.run).start()
         logging.info(f"Starts leader duties")
 
 

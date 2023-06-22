@@ -19,6 +19,7 @@ def initialize_config():
         config_params["agg"] = config.get("DEFAULT", "AGG", fallback=None)
         config_params["field_to_agregate"] = config.get("DEFAULT", "FIELD_TO_AGREGATE", fallback=None)
         config_params["send_data_function"] = config.get("DEFAULT", "SEND_DATA_FUNCTION", fallback='default')
+        config_params["id"] = os.getenv('ID', None)
 
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting packet-distributor".format(e))
@@ -38,6 +39,7 @@ def main():
     agg = config_params["agg"]
     field_to_agregate = config_params["field_to_agregate"]
     send_data_function = config_params["send_data_function"]
+    node_id = config_params["id"]
 
     initialize_log(logging_level)
 
@@ -46,7 +48,7 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     try:
-        groupby = Groupby(input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function)
+        groupby = Groupby(input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function, node_id)
         groupby.run()
     except OSError as e:
         logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')

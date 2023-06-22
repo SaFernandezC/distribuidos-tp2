@@ -10,8 +10,7 @@ class Socket:
 
     def get_addr(self):
         return self.addr
-    
-    def bind(self, addr, port):
+def bind(self, addr, port):
         self.skt.bind((addr, port))
 
     def listen(self, listen_backlog):

@@ -14,7 +14,8 @@ class WorkQueue():
         try:
             self.user_callback = callback
             self.channel.basic_qos(prefetch_count=1)
-            self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._callback, auto_ack=False)
+            tag_id = self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._callback, auto_ack=False)
+            return tag_id
         except Exception as e:
             logging.error(f"Work Queue: Error receiving message {e}")
 

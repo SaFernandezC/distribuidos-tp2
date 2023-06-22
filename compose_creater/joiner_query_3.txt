@@ -11,6 +11,5 @@
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./joiner/config/config_joiner_3.ini:/config.ini

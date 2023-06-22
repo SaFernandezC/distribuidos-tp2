@@ -22,11 +22,11 @@ class ExchangeQueue():
             logging.error(f"Exchange Queue: Error creating queue {e}")
 
     def _declare_queue(self, exchange_name, queue_name):
-        # if not queue_name:
-        #     result = self.channel.queue_declare(queue='', durable=True)
-        #     queue_name = result.method.queue
-        # else:
-        self.channel.queue_declare(queue=queue_name, durable=True)
+        if not queue_name:
+            result = self.channel.queue_declare(queue='', durable=False)
+            queue_name = result.method.queue
+        else:
+            self.channel.queue_declare(queue=queue_name, durable=True)
 
         if self.exchange_type == "topic":
             for routing_key in self.routing_keys:
@@ -40,7 +40,8 @@ class ExchangeQueue():
         try:
             self.user_callback = callback
             self.channel.basic_qos(prefetch_count=1)
-            self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._callback, auto_ack=False)
+            tag_id = self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._callback, auto_ack=False)
+            return tag_id
         except Exception as e:
             logging.error(f"Work Exchange: Error receiving message -> {e}")
         

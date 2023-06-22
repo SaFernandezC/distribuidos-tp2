@@ -52,8 +52,11 @@ class Monitor:
         self.sender_queue = multiprocessing.Queue()
         self.receiver_queue = multiprocessing.Queue()
 
-        self.sender_thread = threading.Thread(target=Sender(self.socket, self.sender_queue).run).start()
-        self.receiver_thread = threading.Thread(target=Receiver(self.socket, self.receiver_queue).run).start()
+        self.sender_thread = threading.Thread(target=Sender(self.socket, self.sender_queue).run)
+        self.sender_thread.start()
+
+        self.receiver_thread = threading.Thread(target=Receiver(self.socket, self.receiver_queue).run)
+        self.receiver_thread.start()
 
         self.checkpoint = 0
 
@@ -67,6 +70,7 @@ class Monitor:
         self.election_start_time = None
 
         self.heartbeat_thread = None
+        self.heartbeat_event = None
 
         self.alive = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
@@ -90,9 +94,12 @@ class Monitor:
         self.leader_id.set(self.replica_id)
         self.is_leader = True
         self.election_in_process.set(False)
+        
         # LLAMADO A HACER LAS TAREAS DEL LIDER
+        self.heartbeat_event = threading.Event()
         heartbeat = HeartBeatChecker(self.nodes)
-        self.heartbeat_thread = threading.Thread(target=heartbeat.run).start()
+        self.heartbeat_thread = multiprocessing.Process(target=heartbeat.run)
+        self.heartbeat_thread.start()
         logging.info(f"Starts leader duties")
 
 
@@ -107,14 +114,13 @@ class Monitor:
         with self.election_start_time_lock:
             if self.election_start_time == None: return False
             return time.time() - self.election_start_time > WAIT_TIME
-    
+            
     def set_checkpoint(self):
-        with self.last_response_lock:
-            self.leader_last_response_time = time.time()
-    
+            with self.last_response_lock:
+                self.leader_last_response_time = time.time()
     def set_election_start(self, value):
-        with self.election_start_time_lock:
-            self.election_start_time = value
+            with self.election_start_time_lock:
+                self.election_start_time = value
 
     def listen(self):
         while True:
@@ -134,6 +140,13 @@ class Monitor:
                     self.leader_id.set(msg_from_replica)
                     self.election_in_process.set(False)
                     self.is_leader = False
+                    if self.heartbeat_thread:
+                        print("Mato Thread")
+                        self.heartbeat_thread.terminate()
+                        self.heartbeat_thread.join()
+                    else:
+                        print("Nada Para Matar")
+                    self.heartbeat_thread = None
                     logging.info(f"Replica {msg_from_replica} is the new leader.")
 
                 elif msg == "ELECTION":
@@ -206,8 +219,11 @@ class Monitor:
     def stop(self):
         try:
             self.alive = False
-            self.sender_thread.join()
-            self.receiver_thread.join()
-            self.heartbeat_thread.join()
+            if self.sender_thread:
+                self.sender_thread.join()
+            if self.receiver_thread:
+                self.receiver_thread.join()
+            if self.heartbeat_thread:
+                self.heartbeat_thread.join()
         except Exception as e:
             logging.error(f"Error stopping monitor | error {e}")

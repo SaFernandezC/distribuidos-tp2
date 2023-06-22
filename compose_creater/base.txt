@@ -39,7 +39,7 @@ services:
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure
+    
 
   station_parser:
     depends_on:
@@ -53,7 +53,6 @@ services:
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./parser/config/config_station_parser.ini:/config.ini
 
@@ -70,14 +69,14 @@ services:
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./status_controller/config.ini:/config.ini
 
   groupby_query_1:
     container_name: groupby_query_1
     depends_on:
-    - joiner_query_1
+      rabbitmq:
+        condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
     - ID=groupby_query_1
@@ -86,14 +85,14 @@ services:
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./groupby/config/config_groupby_1.ini:/config.ini
 
   groupby_query_2:
     container_name: groupby_query_2
     depends_on:
-    - joiner_query_2
+      rabbitmq:
+        condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
     - ID=groupby_query_2
@@ -102,7 +101,6 @@ services:
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./groupby/config/config_groupby_2.ini:/config.ini
 
@@ -119,6 +117,5 @@ services:
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./groupby/config/config_groupby_3.ini:/config.ini

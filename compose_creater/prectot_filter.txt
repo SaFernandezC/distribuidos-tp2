@@ -11,6 +11,5 @@
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./filter/config/config_filter_weather_1.ini:/config.ini

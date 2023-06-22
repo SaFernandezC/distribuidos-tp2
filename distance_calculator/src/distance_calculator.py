@@ -17,7 +17,7 @@ class DistanceCalculator:
         self.eof_manager = self.connection.EofProducer(None, output_queue_name, input_queue_name)
         self.output_queue = self.connection.Producer(output_queue_name)
         self.hearbeater = HeartBeater(self.connection, node_id)
-    
+
     def _handle_sigterm(self, *args):
         """
         Handles SIGTERM signal
@@ -40,7 +40,6 @@ class DistanceCalculator:
             self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
         self.input_queue.ack(ack_tag)
 
-    
     def run(self):
         self.hearbeater.start()
         self.input_queue.receive(self._callback)

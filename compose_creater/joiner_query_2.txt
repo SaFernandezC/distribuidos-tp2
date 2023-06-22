@@ -1,8 +1,8 @@
   joiner_query_2_NODE_ID_HERE:
     container_name: joiner_query_2_NODE_ID_HERE
     depends_on:
-    - filter_stations_query2
-    - filter_trips_year
+      rabbitmq:
+        condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
     - ID=joiner_query_2_NODE_ID_HERE
@@ -11,6 +11,5 @@
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./joiner/config/config_joiner_2.ini:/config.ini

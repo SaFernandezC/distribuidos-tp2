@@ -11,6 +11,5 @@
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./filter/config/config_filter_trips_3.ini:/config.ini

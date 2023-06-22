@@ -88,7 +88,7 @@ class Filter:
             results[i+1] = apply_operator(self.operators[i], results[i], results[i+1])
 
         return results[i+1]
-    
+
     def run(self):
         self.hearbeater.start()
         self.input_queue.receive(self._callback)

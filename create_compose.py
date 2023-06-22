@@ -7,7 +7,7 @@ BASE_FOLDER = "compose_creater/"
 BASE_NODES = ["accepter", "station_parser", "status_controller", "groupby_query_1", "groupby_query_2", "groupby_query_3"]
 OTHER_NODES_IDEFNTIFICATOR = "NODES_HERE"
 OTHER_MONITORS_IDEFNTIFICATOR = "MONITORS_HERE"
-
+DOCKER_FILE = "docker-compose-dev.yaml"
 
 
 def set_up_parser():
@@ -115,7 +115,7 @@ def create_nodes_list(args):
     return nodes
 
 def create_compose(args):
-    file_name = "docker-compose-dev2.yaml"
+    file_name = DOCKER_FILE
     file = open(file_name, "w", encoding="utf-8")
     file.close()
 

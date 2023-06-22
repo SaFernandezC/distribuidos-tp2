@@ -43,7 +43,7 @@ def main():
         date_modifier = DateModifier(input_queue_name, output_exchange, output_exchange_type, node_id)
         date_modifier.run()
     except OSError as e:
-        logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')
+        logging.error(f'action: initiaxlize_distance_calculator | result: fail | error: {e}')
 
 def initialize_log(logging_level):
     """

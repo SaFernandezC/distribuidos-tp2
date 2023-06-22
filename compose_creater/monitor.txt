@@ -7,9 +7,12 @@
       - PYTHONUNBUFFERED=1
       - NODE_ID=NODE_ID_HERE
       - NODES_ID=MONITORS_HERE
-      - PORT=5001
+      - PORT=500NODE_ID_HERE
       - NODES=NODES_HERE
     image: monitor:latest
+    restart: on-failure
     networks:
       - testing_net
-    restart: on-failure
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock
+    

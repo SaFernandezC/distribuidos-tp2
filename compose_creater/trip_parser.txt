@@ -11,6 +11,5 @@
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure.
     volumes:
     - ./parser/config/config_trip_parser.ini:/config.ini

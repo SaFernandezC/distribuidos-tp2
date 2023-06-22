@@ -11,6 +11,5 @@
     - rabbitmq
     networks:
     - testing_net
-    restart: on-failure
     volumes:
     - ./distance_calculator/config.ini:/config.ini

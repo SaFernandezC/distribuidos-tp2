@@ -23,8 +23,7 @@ class Asker():
             self.results[body["client_id"]] = body["data"]
             
         self.metrics_queue.ack(ack_tag)
-    
-    def stop(self):
+def stop(self):
         self.connection.stop_consuming()
         self.connection.close()
         self.stopped = True

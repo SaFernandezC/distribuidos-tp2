@@ -132,6 +132,7 @@ class EofManager:
 
         if line["type"] == "work_queue":
             self._queue(client_id, line)
+            
         self.eof_consumer.ack(ack_tag)
 
     def run(self):

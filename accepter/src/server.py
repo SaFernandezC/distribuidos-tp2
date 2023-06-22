@@ -33,15 +33,12 @@ class Server:
         self.results = {}
         self.results_lock = threading.Lock()
         # self.metrics_queue = self.connection.Consumer(queue_name='metrics')
-        self.asker = Asker(self.results, self.results_lock)
+        self.asker = Asker(self.results, self.results_lock, node_id)
         self.ask_results = threading.Thread(target=self.asker.run)
 
         # self.results_queue = multiprocessing.Queue()
         self.id_counter = self._init_id_counter()
         self.client_threads = []
-
-        self.connection = Connection()
-        self.heartbeater = HeartBeater(self.connection, node_id)
 
     def _init_id_counter(self):
         return 0

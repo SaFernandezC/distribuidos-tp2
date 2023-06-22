@@ -6,6 +6,7 @@ import multiprocessing
 from common.Connection import Connection
 from .utils import Asker
 from .client import Client
+from common.HeartBeater import HeartBeater
 import ujson as json
 
 import threading
@@ -20,7 +21,7 @@ ASK_DATA = 'A'
 INT_LENGTH = 4
 
 class Server:
-    def __init__(self, port, listen_backlog):  # TO DO: Add File
+    def __init__(self, port, listen_backlog, node_id):  # TO DO: Add File
         self._server_socket = Socket()
         self._server_socket.bind('', port)
         self._server_socket.listen(listen_backlog)
@@ -38,6 +39,9 @@ class Server:
         # self.results_queue = multiprocessing.Queue()
         self.id_counter = self._init_id_counter()
         self.client_threads = []
+
+        self.connection = Connection()
+        self.heartbeater = HeartBeater(self.connection, node_id)
 
     def _init_id_counter(self):
         return 0

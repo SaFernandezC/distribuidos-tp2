@@ -5,11 +5,12 @@ import signal
 import logging
 import time
 from common.utils import get_docker_id
+from common.HeartBeater import HeartBeater
 
 
 class Joiner():
     def __init__(self, input_exchange_1, input_exchange_type_1, input_queue_name_2, output_queue_name,
-                primary_key, primary_key_2, select, joiner_function):
+                primary_key, primary_key_2, select, joiner_function, node_id):
 
         self.side_table = {}
         self.fields_to_select = self._parse_select(select)
@@ -23,6 +24,7 @@ class Joiner():
         self.input_queue1 = self.connection.Subscriber(exchange_name=input_exchange_1, exchange_type=input_exchange_type_1, queue_name=self.docker_id)
         self.input_queue2 = self.connection.Consumer(input_queue_name_2)
         self.output_queue = self.connection.Producer(output_queue_name)
+        self.hearbeater = HeartBeater(self.connection, node_id)
 
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
@@ -36,11 +38,11 @@ class Joiner():
         """
         logging.info('SIGTERM received - Shutting server down')
         self.connection.close()
-        
+
     def _parse_key(self, key):
         splitted = key.split(',')
         return tuple(splitted)
-    
+
     def _parse_select(self, select):
         if select:
             return select.split(',')
@@ -55,7 +57,7 @@ class Joiner():
             for _i in self.key1:
                 values.append(item[_i])
                 del item[_i]
-            
+
             self.side_table[client_id][tuple(values)] = item
 
     def _callback_queue1(self, body, ack_tag):
@@ -103,6 +105,7 @@ class Joiner():
         self.input_queue2.ack(ack_tag)
 
     def run(self):
+        self.hearbeater.start()
         self.input_queue1.receive(self._callback_queue1)
         self.input_queue2.receive(self._callback_queue2)
         self.connection.start_consuming()

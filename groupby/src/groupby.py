@@ -4,11 +4,12 @@ from .utils import default, find_dup_trips_year, find_stations_query_3
 import signal
 import logging
 from common.AtomicWrite import atomic_write, get_current_file
+from common.HeartBeater import HeartBeater
 
 
 class Groupby:
 
-    def __init__(self, input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function):
+    def __init__(self, input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function, node_id):
 
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
@@ -27,6 +28,7 @@ class Groupby:
 
         self.tags_to_ack = [] # [messages]
         self.ids_processed = {}  # {Client_id: [ids]}
+        self.hearbeater = HeartBeater(self.connection, node_id)
 
 
     def _handle_sigterm(self, *args):
@@ -138,6 +140,7 @@ class Groupby:
         self.input_queue.ack(ack_tag)
 
     def run(self):
+        self.hearbeater.start()
         self.input_queue.receive(self._callback)
         self.connection.start_consuming()
         self.connection.close()

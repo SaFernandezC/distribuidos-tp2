@@ -3,6 +3,7 @@ from common.Connection import Connection
 import ujson as json
 import signal
 import logging
+from common.HeartBeater import HeartBeater
 
 SIN_FILTROS = 0
 SIN_SELECCIONES = 0
@@ -11,7 +12,7 @@ INT_LENGTH = 4
 
 class Filter:
     def __init__(self, fields_to_select, raw_filters, amount_filters, operators, input_exchange, input_exchange_type,
-                input_queue_name, output_exchange, output_exchange_type, output_queue_name):
+                input_queue_name, output_exchange, output_exchange_type, output_queue_name, node_id):
 
         self.fields_to_select = self._parse_fields_to_select(fields_to_select)
         self.amount_filters = amount_filters
@@ -29,6 +30,7 @@ class Filter:
         if output_exchange_type == 'fanout':
             self.output_queue = self.connection.Publisher(output_exchange, output_exchange_type)
         else: self.output_queue = self.connection.Producer(queue_name=output_queue_name)
+        self.hearbeater = HeartBeater(self.connection, node_id)
 
 
     def _handle_sigterm(self, *args):
@@ -88,6 +90,7 @@ class Filter:
         return results[i+1]
     
     def run(self):
+        self.hearbeater.start()
         self.input_queue.receive(self._callback)
         self.connection.start_consuming()
         self.connection.close()

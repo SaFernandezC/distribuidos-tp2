@@ -15,6 +15,7 @@ def initialize_config():
         config_params["routing_key"] = config.get("DEFAULT", "ROUTING_KEY", fallback=None)
         config_params["output_exchange"] = config.get("DEFAULT", "OUTPUT_EXCHANGE", fallback=None)
         config_params["output_exchange_type"] = config.get("DEFAULT", "OUTPUT_EXCHANGE_TYPE", fallback=None)
+        config_params["id"] = os.getenv('ID', None)
 
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting packet-distributor".format(e))
@@ -31,7 +32,7 @@ def main():
     routing_key = config_params["routing_key"] 
     output_exchange = config_params["output_exchange"]
     output_exchange_type = config_params["output_exchange_type"]
-
+    node_id = config_params["id"]
 
     initialize_log(logging_level)
 
@@ -40,7 +41,7 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     try:
-        parser = Parser(input_queue, routing_key, output_exchange, output_exchange_type)
+        parser = Parser(input_queue, routing_key, output_exchange, output_exchange_type, node_id)
         parser.run()
     except OSError as e:
         logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')

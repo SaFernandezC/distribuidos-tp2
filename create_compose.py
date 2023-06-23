@@ -4,7 +4,7 @@ import json
 
 ID_IDENTIFICATOR = "NODE_ID_HERE"
 BASE_FOLDER = "compose_creater/"
-BASE_NODES = ["accepter", "station_parser", "status_controller", "groupby_query_1", "groupby_query_2", "groupby_query_3"]
+BASE_NODES = ["accepter", "eof_manager", "status_controller", "groupby_query_1", "groupby_query_2", "groupby_query_3"]
 OTHER_NODES_IDEFNTIFICATOR = "NODES_HERE"
 OTHER_MONITORS_IDEFNTIFICATOR = "MONITORS_HERE"
 DOCKER_FILE = "docker-compose-dev.yaml"

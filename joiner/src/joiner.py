@@ -63,11 +63,9 @@ class Joiner():
     def _callback_queue1(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
-        print(f"Callback 1: {client_id} -> {batch.keys()}")
         # print(f"cliente: {client_id} -> {batch}")
         if "eof" in batch:
             # Problema de perdida de mensajes si no hay nadie escuchando ahi (solucionado con colas durables y persistente)
-            print(f"Eof de {client_id}")
             if client_id not in self.eof_received:
                 self.eof_received.append(client_id)
         else:

@@ -39,7 +39,7 @@ services:
     - rabbitmq
     networks:
     - testing_net
-  
+    
   eof_manager:
     container_name: eof_manager
     depends_on:

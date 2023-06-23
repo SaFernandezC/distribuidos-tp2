@@ -40,21 +40,19 @@ services:
     networks:
     - testing_net
     
-
-  station_parser:
+  eof_manager:
+    container_name: eof_manager
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=station_parser
-    image: parser:latest
+    - ID=eof_manager
+    image: eof_manager:latest
     links:
     - rabbitmq
     networks:
     - testing_net
-    volumes:
-    - ./parser/config/config_station_parser.ini:/config.ini
 
   status_controller:
     container_name: status_controller

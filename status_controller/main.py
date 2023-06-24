@@ -14,6 +14,7 @@ def initialize_config():
         config_params["qty_of_queries"] = int(config.get("DEFAULT", "QTY_OF_QUERIES", fallback=None))
         config_params["input_queue_name"] = config.get("DEFAULT", "INPUT_QUEUE_NAME", fallback=None)
         config_params["output_queue_name"] = config.get("DEFAULT", "OUTPUT_QUEUE_NAME", fallback=None)
+        config_params["id"] = os.getenv('ID', None)
 
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting packet-distributor".format(e))
@@ -28,7 +29,8 @@ def main():
     logging_level = config_params["logging_level"] 
     input_queue_name = config_params["input_queue_name"]
     output_queue_name = config_params["output_queue_name"]
-    qty_of_queries = config_params["qty_of_queries"] 
+    qty_of_queries = config_params["qty_of_queries"]
+    node_id = config_params["id"]
 
 
     initialize_log(logging_level)
@@ -38,7 +40,7 @@ def main():
     logging.debug(f"action: config | result: success | logging_level: {logging_level}")
 
     try:
-        status_controller = StatusController(input_queue_name, output_queue_name, qty_of_queries)
+        status_controller = StatusController(input_queue_name, output_queue_name, qty_of_queries, node_id)
         status_controller.run()
     except OSError as e:
         logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')

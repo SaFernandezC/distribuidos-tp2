@@ -15,8 +15,8 @@ def join_func_query3(key, item, side_table):
         end_station = side_table[str((item["end_station_code"],item["yearid"]))]
     
         res = {"end_name": end_station["name"], "start_latitude": start_station["latitude"],
-                "start_longitude": start_station["longitude"], "end_latitude": end_station["latitude"],
-                "end_longitude": end_station["longitude"]}
+                    "start_longitude": start_station["longitude"], "end_latitude": end_station["latitude"],
+                    "end_longitude": end_station["longitude"]}
 
         return True, res
     return False, {}

@@ -7,11 +7,13 @@ import logging
 from common.AtomicWrite import atomic_write, load_memory
 import random
 from hashlib import sha256
+from common.HeartBeater import HeartBeater
 
 MESSAGES_BATCH = 10
 
 class Groupby:
-    def __init__(self, input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function):
+
+    def __init__(self, input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function, node_id):
 
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
@@ -30,6 +32,7 @@ class Groupby:
 
         self.tags_to_ack = [] # [messages]
         self.ids_processed = {}  # {Client_id: [ids]}
+        self.hearbeater = HeartBeater(self.connection, node_id)
 
         self.msg_counter = 0
         self.get_previous_state()
@@ -158,6 +161,7 @@ class Groupby:
         self.ack(force_ack)
 
     def run(self):
+        self.hearbeater.start()
         self.input_queue.receive(self._callback, prefetch_count=MESSAGES_BATCH)
         self.connection.start_consuming()
         self.connection.close()

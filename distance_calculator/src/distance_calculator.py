@@ -3,10 +3,11 @@ import ujson as json
 from haversine import haversine
 import signal
 import logging
+from common.HeartBeater import HeartBeater
 
 class DistanceCalculator:
 
-    def __init__(self, input_queue_name, output_queue_name):
+    def __init__(self, input_queue_name, output_queue_name, node_id):
 
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
@@ -15,7 +16,8 @@ class DistanceCalculator:
         self.input_queue = self.connection.Consumer(input_queue_name)
         self.eof_manager = self.connection.EofProducer(None, output_queue_name, input_queue_name)
         self.output_queue = self.connection.Producer(output_queue_name)
-    
+        self.hearbeater = HeartBeater(self.connection, node_id)
+
     def _handle_sigterm(self, *args):
         """
         Handles SIGTERM signal
@@ -38,8 +40,8 @@ class DistanceCalculator:
             self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
         self.input_queue.ack(ack_tag)
 
-    
     def run(self):
+        self.hearbeater.start()
         self.input_queue.receive(self._callback)
         self.connection.start_consuming()
         self.connection.close()

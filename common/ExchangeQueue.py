@@ -22,11 +22,11 @@ class ExchangeQueue():
             logging.error(f"Exchange Queue: Error creating queue {e}")
 
     def _declare_queue(self, exchange_name, queue_name):
-        # if not queue_name:
-        #     result = self.channel.queue_declare(queue='', durable=True)
-        #     queue_name = result.method.queue
-        # else:
-        self.channel.queue_declare(queue=queue_name, durable=True)
+        if not queue_name:
+            result = self.channel.queue_declare(queue='', durable=False)
+            queue_name = result.method.queue
+        else:
+            self.channel.queue_declare(queue=queue_name, durable=True)
 
         if self.exchange_type == "topic":
             for routing_key in self.routing_keys:
@@ -67,7 +67,6 @@ class ExchangeQueue():
             if isinstance(ack_element, list):
                 self.channel.basic_nack(delivery_tag=ack_element[-1], multiple=True)
             elif isinstance(ack_element, int):
-                print(f"Nacked: {ack_element}")
                 self.channel.basic_nack(delivery_tag=ack_element)
             else:
                 raise Exception(f"Not Valid ACK Element {ack_element}")                

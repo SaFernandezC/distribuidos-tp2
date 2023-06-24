@@ -1,0 +1,119 @@
+networks:
+  testing_net:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.25.125.0/24
+      driver: default
+services:
+  rabbitmq:
+    build:
+      context: ./rabbitmq
+      dockerfile: rabbitmq.dockerfile
+    environment:
+    - RABBITMQ_LOGS=-
+    healthcheck:
+      interval: 10s
+      retries: 10
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:15672
+      timeout: 5s
+    networks:
+    - testing_net
+    ports:
+    - 15672:15672
+
+  accepter:
+    container_name: accepter
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=accepter
+    image: accepter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    
+  eof_manager:
+    container_name: eof_manager
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=eof_manager
+    image: eof_manager:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+
+  status_controller:
+    container_name: status_controller
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=status_controller
+    image: status_controller:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./status_controller/config.ini:/config.ini
+
+  groupby_query_1:
+    container_name: groupby_query_1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=groupby_query_1
+    image: groupby:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./groupby/config/config_groupby_1.ini:/config.ini
+
+  groupby_query_2:
+    container_name: groupby_query_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=groupby_query_2
+    image: groupby:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./groupby/config/config_groupby_2.ini:/config.ini
+
+  groupby_query_3:
+    container_name: groupby_query_3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=groupby_query_3
+    image: groupby:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./groupby/config/config_groupby_3.ini:/config.ini

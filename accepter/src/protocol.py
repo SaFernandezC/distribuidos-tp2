@@ -74,13 +74,12 @@ class Protocol:
 
     def recv_action(self, skt):
         return skt.recv_msg(self.cant_bytes_action).decode()
-    
+
     def recv_key(self, skt):
         key = skt.recv_msg(self.cant_bytes_key).decode()
         if key == SEND_TRIPS: return "trip"
         if key == SEND_STATIONS: return "station"
         if key == SEND_WEATHERS: return "weather"
-
 
     def send_result(self, skt, ready, data=""):
         msg = bytes(json.dumps({"ready": ready, "data":data}),  'utf-8')

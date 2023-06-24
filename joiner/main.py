@@ -20,6 +20,7 @@ def initialize_config():
         config_params["primary_key_2"] = config.get("DEFAULT", "PRIMARY_KEY_2", fallback='')
         config_params["select"] = config.get("DEFAULT", "SELECT", fallback=None)
         config_params["joiner_function"] = config.get("DEFAULT", "JOINER_FUNCTION", fallback='default')
+        config_params["id"] = os.getenv('ID', None)
 
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting packet-distributor".format(e))
@@ -40,6 +41,7 @@ def main():
     primary_key_2 = config_params["primary_key_2"]
     select = config_params["select"]
     joiner_function = config_params["joiner_function"]
+    node_id = config_params["id"]
 
     initialize_log(logging_level)
 
@@ -49,7 +51,7 @@ def main():
 
     try:
         joiner = Joiner(input_exchange_1, input_exchange_type_1, input_queue_name_2, output_queue_name,
-                        primary_key, primary_key_2, select, joiner_function)
+                        primary_key, primary_key_2, select, joiner_function, node_id)
         joiner.run()
     except OSError as e:
         logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')

@@ -25,7 +25,7 @@ class Connection:
 
     def EofProducer(self, output_exchange, output_queue, input_queue):
         return EofQueue(self.channel, output_exchange, output_queue, input_queue)
-    
+
     # def EofConsumer(self, output_exchange, output_queue, input_queue):
     #     return EofQueue(self.channel, output_exchange, output_queue, input_queue)
 
@@ -41,6 +41,10 @@ class Connection:
             raise Exception("Already Stopped Channel")
         self.channel.stop_consuming()
         self._active_channel = False
+
+
+    def stop_basic_consume(self, basic_id):
+        self.channel.basic_cancel(consumer_tag=basic_id)
 
 
     def close(self):

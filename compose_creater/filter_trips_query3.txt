@@ -1,0 +1,15 @@
+  filter_trips_query3_NODE_ID_HERE:
+    container_name: filter_trips_query3_NODE_ID_HERE
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=filter_trips_query3_NODE_ID_HERE
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./filter/config/config_filter_trips_3.ini:/config.ini

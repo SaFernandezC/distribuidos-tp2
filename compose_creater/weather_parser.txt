@@ -1,0 +1,15 @@
+  weather_parser_NODE_ID_HERE:
+    container_name: weather_parser_NODE_ID_HERE
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=weather_parser_NODE_ID_HERE
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./parser/config/config_weather_parser.ini:/config.ini

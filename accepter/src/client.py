@@ -48,6 +48,7 @@ class Client:
 
     def ask_for_data(self):
         with self.results_lock:
+            # print(self.results)
             if not self.id in self.results:
                 self.protocol.send_result(self.client_sock, False)
             else:

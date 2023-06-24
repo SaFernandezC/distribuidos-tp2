@@ -4,6 +4,7 @@ import time
 import signal
 import logging
 from hashlib import sha256
+from common.HeartBeater import HeartBeater
 import copy
 from common.AtomicWrite import atomic_write, load_memory
 
@@ -11,7 +12,7 @@ INT_LENGTH = 4
 
 class EofManager:
 
-    def __init__(self):
+    def __init__(self, node_id):
 
         self.base_exchanges, self.base_work_queues = self._load_config()
 
@@ -19,6 +20,7 @@ class EofManager:
         self.connection = Connection()
         self.eof_consumer = self.connection.Consumer('eof_manager')
         self.exchange_connections, self.queues_connection = self._declare_queues()
+        self.hearbeater = HeartBeater(self.connection, node_id)
 
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
@@ -181,6 +183,7 @@ class EofManager:
         self.eof_consumer.ack(ack_tag)
 
     def run(self):
+        self.hearbeater.start()
         self.eof_consumer.receive(self._callback)
         self.connection.start_consuming()
         self.connection.close()

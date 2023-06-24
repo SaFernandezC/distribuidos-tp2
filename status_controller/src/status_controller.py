@@ -2,10 +2,11 @@ from common.Connection import Connection
 import ujson as json
 import signal
 import logging
+from common.HeartBeater import HeartBeater
 
 class StatusController:
 
-    def __init__(self, input_queue_name, output_queue_name, qty_of_queries):
+    def __init__(self, input_queue_name, output_queue_name, qty_of_queries, node_id):
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
@@ -16,6 +17,7 @@ class StatusController:
 
         self.input_queue = self.connection.Consumer(input_queue_name)
         self.output_queue = self.connection.Producer(output_queue_name)
+        self.hearbeater = HeartBeater(self.connection, node_id)
 
     def _handle_sigterm(self, *args):
         """
@@ -39,8 +41,9 @@ class StatusController:
             self.output_queue.send(json.dumps(data_to_send))
             print(f"Resultado de cliente {client_id}: ", self.data[client_id])
         self.input_queue.ack(ack_tag)
-    
+
     def run(self):
+        self.hearbeater.start()
         self.input_queue.receive(self._callback)
         self.connection.start_consuming()
         self.connection.close()

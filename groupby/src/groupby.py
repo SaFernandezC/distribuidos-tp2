@@ -8,9 +8,9 @@ from common.AtomicWrite import atomic_write, load_memory
 import random
 from hashlib import sha256
 
+MESSAGES_BATCH = 10
 
 class Groupby:
-
     def __init__(self, input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function):
 
         self.running = True
@@ -39,10 +39,6 @@ class Groupby:
         previous_state = load_memory("./data.txt")
         self.group_table = previous_state.get('group_table', {})
         self.ids_processed = previous_state.get('ids_processed', {})
-        # print(f"GT: {self.group_table}")
-        # for key in self.ids_processed.keys():
-        #     print(f"KEY: {key} | TYPE: {type(key)}")
-        # print(f"ids: {self.ids_processed}")
 
 
     def _handle_sigterm(self, *args):
@@ -112,27 +108,24 @@ class Groupby:
 
         return already_added
 
-    #def ack(self, forced):
-        #if len(self.tags_to_ack) > MESSAGES_BATCH or forced:
-            # Bajo A Disco group table/ids
-            # {
-            #     "group_table": self.group_table,
-            #     "ids_processed": self.ids_processed,
-            # }
-            # send_ack
-            # self.tags_to_ack = []
+    def ack(self, forced):
+        if len(self.tags_to_ack) >= MESSAGES_BATCH or forced:
+            data = {
+                "group_table": self.group_table,
+                "ids_processed": self.ids_processed
+            }
+            atomic_write("./data.txt", json.dumps(data))
+            self.input_queue.ack(self.tags_to_ack)
+            self.tags_to_ack = []
 
-    def caer(self):
+    def caer(self, location):
         num = random.random()
         if num <= 0.05:
-            print("ME CAIGO")
+            print(f"ME CAIGO EN {location}")
             resultado = 1/0
 
     def _callback(self, body, ack_tag):
         message_id = int(sha256(body).hexdigest(), 16)
-        # print(f"MESSAGE ID: {message_id}")
-
-        # print(f"BODY: {body}")
 
         batch = json.loads(body.decode())
         client_id = str(batch["client_id"])
@@ -143,33 +136,23 @@ class Groupby:
             self.input_queue.ack(ack_tag)
             return
 
-        # self.caer()
-
         if "eof" in batch:
             function = eval(self.send_data_function)
             filtered = function(self.group_table[client_id])
             self.output_queue.send(json.dumps({"client_id": client_id, "query": self.query, "results": filtered}))
         else:
-            # self.caer()
             self._group(client_id, batch["data"])
 
-        # if "clean" in batch or "eof" in batch:
-        #     self.ids_processed.pop(client_id, None)
-        #     self.group_table.pop(client_id, None)
+        force_ack = False
 
-        # Bajo A Disco group table/ids
-        data = {
-            "group_table": self.group_table,
-            "ids_processed": self.ids_processed
-        }
+        if "clean" in batch or "eof" in batch:
+            self.ids_processed.pop(client_id, None)
+            self.group_table.pop(client_id, None)
+            force_ack = True
 
-        # self.caer()
-        atomic_write("./data.txt", json.dumps(data))
-
-        # self.caer()
-        self.input_queue.ack(ack_tag)
+        self.ack(force_ack)
 
     def run(self):
-        self.input_queue.receive(self._callback)
+        self.input_queue.receive(self._callback, prefetch_count=MESSAGES_BATCH)
         self.connection.start_consuming()
         self.connection.close()

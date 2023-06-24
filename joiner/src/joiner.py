@@ -10,6 +10,7 @@ from common.AtomicWrite import atomic_write, load_memory
 import random
 from hashlib import sha256
 
+MESSAGES_BATCH = 10
 
 class Joiner():
     def __init__(self, input_exchange_1, input_exchange_type_1, input_queue_name_2, output_queue_name,
@@ -86,18 +87,35 @@ class Joiner():
 
         return already_added
 
+    def ack(self, forced):
+        if len(self.tags_to_ack) >= MESSAGES_BATCH or forced:
+            data = {
+                "side_table": self.side_table,
+                "ids_processed": self.ids_processed,
+                "eof_received": self.eof_received
+            }
+            atomic_write("./data.txt", json.dumps(data))
+            self.caer("After Writing")
+            self.input_queue1.ack(self.tags_to_ack)
+            self.tags_to_ack = []
 
+    def caer(self, location):
+        num = random.random()
+        if num <= 0.1:
+            print(f"ME CAIGO EN {location}")
+            resultado = 1/0
+            
     def _callback_queue1(self, body, ack_tag):
         message_id = int(sha256(body).hexdigest(), 16)
 
         batch = json.loads(body.decode())
-        client_id = str(batch["client_id"])
+        client_id = batch["client_id"]
         
-        # self.tags_to_ack.append(ack_tag)
-        # duplicated = self.add_message_id(message_id, client_id)
-        # if duplicated:
-        #     self.input_queue1.ack(ack_tag)
-        #     return
+        self.tags_to_ack.append(ack_tag)
+        duplicated = self.add_message_id(message_id, client_id)
+        if duplicated:
+            self.input_queue1.ack(ack_tag)
+            return
 
         if "eof" in batch:
             # Problema de perdida de mensajes si no hay nadie escuchando ahi (solucionado con colas durables y persistente)
@@ -105,16 +123,12 @@ class Joiner():
                 self.eof_received.append(client_id)
         else:
             self._add_item(client_id, batch["data"])
-
-        # data = {
-        #     "side_table": self.side_table,
-        #     "ids_processed": self.ids_processed,
-        #     "eof_received": self.eof_received
-        # }
+            
 
         # atomic_write("./data.txt", json.dumps(data))
-
-        self.input_queue1.ack(ack_tag)
+        # self.input_queue1.ack(ack_tag)
+        force_ack = "clean" in batch or "eof" in batch
+        self.ack(force_ack)
 
     def _select(self, row):
         if not self.fields_to_select: return row
@@ -147,7 +161,7 @@ class Joiner():
         self.input_queue2.ack(ack_tag)
 
     def run(self):
-        self.input_queue1.receive(self._callback_queue1)
+        self.input_queue1.receive(self._callback_queue1, prefetch_count=MESSAGES_BATCH)
         self.input_queue2.receive(self._callback_queue2)
         self.connection.start_consuming()
         self.connection.close()

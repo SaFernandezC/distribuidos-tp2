@@ -36,20 +36,20 @@ class ExchangeQueue():
             
         return queue_name
 
-    def receive(self, callback):
+    def receive(self, callback, prefetch_count=1):
         try:
             self.user_callback = callback
-            self.channel.basic_qos(prefetch_count=1)
+            self.channel.basic_qos(prefetch_count=prefetch_count)
             self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._callback, auto_ack=False)
         except Exception as e:
             logging.error(f"Work Exchange: Error receiving message -> {e}")
         
     def _callback(self, ch, method, properties, body):
-        try:
-            self.user_callback(body, method.delivery_tag)
+        # try:
+        self.user_callback(body, method.delivery_tag)
             # ch.basic_ack(delivery_tag=method.delivery_tag)
-        except Exception as e:
-            logging.error(f"Exchange Queue: Error on callback -> {e}")
+        # except Exception as e:
+        #     logging.error(f"Exchange Queue: Error on callback -> {e}")
 
     def ack(self, ack_element):
         try:

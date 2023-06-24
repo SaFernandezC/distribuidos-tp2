@@ -10,10 +10,10 @@ class WorkQueue():
         except Exception as e:
             logging.error(f"Work Queue: Error creating queue {e}")
 
-    def receive(self, callback):
+    def receive(self, callback, prefetch_count=1):
         try:
             self.user_callback = callback
-            self.channel.basic_qos(prefetch_count=1)
+            self.channel.basic_qos(prefetch_count=prefetch_count)
             self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._callback, auto_ack=False)
         except Exception as e:
             logging.error(f"Work Queue: Error receiving message {e}")

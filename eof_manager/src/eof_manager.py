@@ -3,8 +3,9 @@ from common.Connection import Connection
 import time
 import signal
 import logging
-
+from hashlib import sha256
 import copy
+from common.AtomicWrite import atomic_write, load_memory
 
 INT_LENGTH = 4
 
@@ -26,7 +27,14 @@ class EofManager:
         self.active_clients = []
         self.work_queues_per_client = {}
         self.exchanges_per_client = {}
+        self.ids_processed = {}
 
+    def get_previous_state(self):
+        previous_state = load_memory("./data.txt")
+        self.work_queues_per_client = previous_state.get('work_queues_per_client', {})
+        self.exchanges_per_client = previous_state.get('exchanges_per_client', {})
+        self.active_clients = previous_state.get('active_clients', {})
+        self.ids_processed = previous_state.get('ids_processed', {})
 
     def _handle_sigterm(self, *args):
         """
@@ -88,7 +96,6 @@ class EofManager:
                     self.queues_connection[queue_name].send(self.build_eof_msg(client_id))
                     # print(f"{time.asctime(time.localtime())} ENVIO EOF A COLA {queue_name} DE EXCHANFE: ", line["exchange"])
 
-
     def _exchange_without_queues(self, client_id, line):
         exchange = self.exchanges_per_client[client_id][line["exchange"]]
         writing = exchange["writing"]
@@ -109,19 +116,8 @@ class EofManager:
                 print(f"{time.asctime(time.localtime())} ENVIO EOF DE {client_id} A: {queue} donde hay {listening} listening")
                 self.queues_connection[line["queue"]].send(self.build_eof_msg(client_id))
 
-    def add_new_client(self, client_id):
-        logging.info(f"Adding new client: {client_id}")
-        self.active_clients.append(client_id)
-        self.exchanges_per_client[client_id] = copy.deepcopy(self.base_exchanges)
-        self.work_queues_per_client[client_id] = copy.deepcopy(self.base_work_queues)
 
-    def _callback(self, body, ack_tag):
-        line = json.loads(body.decode())
-        client_id = line["client_id"]
-
-        if client_id not in self.active_clients:
-            self.add_new_client(client_id)
-
+    def process_eof(self, line, client_id):
         if line["type"] == "exchange":
             if len(self.base_exchanges[line["exchange"]]["queues_binded"]) == 0:
                 self._exchange_without_queues(client_id, line)
@@ -130,6 +126,58 @@ class EofManager:
 
         if line["type"] == "work_queue":
             self._queue(client_id, line)
+
+
+    def add_new_client(self, client_id):
+        logging.info(f"Adding new client: {client_id}")
+        self.active_clients.append(client_id)
+        self.exchanges_per_client[client_id] = copy.deepcopy(self.base_exchanges)
+        self.work_queues_per_client[client_id] = copy.deepcopy(self.base_work_queues)
+
+
+    def add_message_id(self, message_id, client_id):
+        if not client_id in self.ids_processed:
+            self.ids_processed[client_id] = []
+
+        already_added = message_id in self.ids_processed[client_id]
+
+        if not already_added:
+            self.ids_processed[client_id].append(message_id)
+
+        return already_added
+
+    def _callback(self, body, ack_tag):
+        message_id = int(sha256(body).hexdigest(), 16)
+
+        line = json.loads(body.decode())
+        client_id = str(line["client_id"])
+
+        if client_id not in self.active_clients:
+            self.add_new_client(client_id)
+        
+        # Agregar el container id al mensaje de EOF para poder filtrar dups
+        duplicated = self.add_message_id(message_id, client_id)
+        if duplicated:
+            self.eof_consumer.ack(ack_tag)
+            return
+
+        # if line["type"] == "exchange":
+        #     if len(self.base_exchanges[line["exchange"]]["queues_binded"]) == 0:
+        #         self._exchange_without_queues(client_id, line)
+        #     else:
+        #         self._exchange_with_queues(client_id, line)
+
+        # if line["type"] == "work_queue":
+        #     self._queue(client_id, line)
+        self.process_eof(line, client_id)
+
+        data = {
+            "work_queues_per_client": self.work_queues_per_client,
+            "exchanges_per_client": self.exchanges_per_client,
+            "active_clients": self.active_clients,
+            "ids_processed": self.ids_processed
+        }
+        atomic_write("./data.txt", json.dumps(data))
         self.eof_consumer.ack(ack_tag)
 
     def run(self):

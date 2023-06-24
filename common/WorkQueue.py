@@ -1,4 +1,5 @@
 import logging
+import pika
 
 class WorkQueue():
     def __init__(self, channel, queue_name):
@@ -55,6 +56,7 @@ class WorkQueue():
         try:
             self.channel.basic_publish(exchange='',
                         routing_key=self.queue_name,
-                        body=message)
+                        body=message,
+                        properties=pika.BasicProperties(delivery_mode=2))
         except Exception as e:
             logging.error(f"Work Queue: Error sending message {e}")

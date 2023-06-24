@@ -112,6 +112,7 @@ class Filter:
                     
                 if filtered:
                     data.append(self.select(item))
-            self.output_queue.send(json.dumps({"client_id":client_id, "data":data}))
+            if len(data) > 0:
+                self.output_queue.send(json.dumps({"client_id":client_id, "data":data}))
         
         self.input_queue.ack(ack_tag)

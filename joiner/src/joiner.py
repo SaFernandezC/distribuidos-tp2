@@ -73,8 +73,7 @@ class Joiner():
                 values.append(item[_i])
                 del item[_i]
             
-            self.side_table[client_id][tuple(values)] = item
-
+            self.side_table[client_id][str(tuple(values))] = item
 
     def add_message_id(self, message_id, client_id):
         if not client_id in self.ids_processed:
@@ -87,29 +86,29 @@ class Joiner():
 
         return already_added
 
+    def caer(self, location):
+        num = random.random()
+        if num < 0.1:
+            print(f"ME CAIGO EN {location}")
+            resultado = 1/0   
+
     def ack(self, forced):
         if len(self.tags_to_ack) >= MESSAGES_BATCH or forced:
             data = {
                 "side_table": self.side_table,
                 "ids_processed": self.ids_processed,
-                "eof_received": self.eof_received
+                "eof_received": self.eof_received,
             }
             atomic_write("./data.txt", json.dumps(data))
             self.caer("After Writing")
             self.input_queue1.ack(self.tags_to_ack)
             self.tags_to_ack = []
 
-    def caer(self, location):
-        num = random.random()
-        if num <= 0.1:
-            print(f"ME CAIGO EN {location}")
-            resultado = 1/0
-            
     def _callback_queue1(self, body, ack_tag):
         message_id = int(sha256(body).hexdigest(), 16)
 
         batch = json.loads(body.decode())
-        client_id = batch["client_id"]
+        client_id = str(batch["client_id"])
         
         self.tags_to_ack.append(ack_tag)
         duplicated = self.add_message_id(message_id, client_id)
@@ -123,7 +122,6 @@ class Joiner():
                 self.eof_received.append(client_id)
         else:
             self._add_item(client_id, batch["data"])
-            
 
         # atomic_write("./data.txt", json.dumps(data))
         # self.input_queue1.ack(ack_tag)
@@ -140,7 +138,7 @@ class Joiner():
 
     def _callback_queue2(self, body, ack_tag):
         batch = json.loads(body.decode())
-        client_id = batch["client_id"]
+        client_id = str(batch["client_id"])
 
         if client_id not in self.eof_received:
             self.input_queue2.nack(ack_tag)
@@ -156,7 +154,9 @@ class Joiner():
 
                 if joined:
                     data.append(self._select(res))
-            self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
+
+            if len(data) > 0:
+                self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
 
         self.input_queue2.ack(ack_tag)
 

@@ -23,7 +23,7 @@ class Filter:
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
         self.connection = Connection()
-        self.eof_manager = self.connection.EofProducer(output_exchange, output_queue_name, input_queue_name)
+        self.eof_manager = self.connection.EofProducer(output_exchange, output_queue_name, node_id)
 
         self.input_queue = self.connection.Subscriber(exchange_name=input_exchange, exchange_type=input_exchange_type, queue_name=input_queue_name)
 

@@ -4,7 +4,6 @@ from .utils import default, join_func_query3
 import signal
 import logging
 import time
-from common.utils import get_docker_id
 from common.HeartBeater import HeartBeater
 
 from common.AtomicWrite import atomic_write, load_memory
@@ -22,11 +21,9 @@ class Joiner():
         self.key1 = self._parse_key(primary_key)
         self.key2 = self._parse_key(primary_key_2)
 
-        self.docker_id = get_docker_id()
-
         self.connection = Connection()
-        self.eof_manager = self.connection.EofProducer(None, output_queue_name, input_queue_name_2)
-        self.input_queue1 = self.connection.Subscriber(exchange_name=input_exchange_1, exchange_type=input_exchange_type_1, queue_name=self.docker_id)
+        self.eof_manager = self.connection.EofProducer(None, output_queue_name, node_id)
+        self.input_queue1 = self.connection.Subscriber(exchange_name=input_exchange_1, exchange_type=input_exchange_type_1, queue_name=node_id)
         self.input_queue2 = self.connection.Consumer(input_queue_name_2)
         self.output_queue = self.connection.Producer(output_queue_name)
         self.hearbeater = HeartBeater(self.connection, node_id)
@@ -102,7 +99,7 @@ class Joiner():
                 "eof_received": self.eof_received,
             }
             atomic_write("./data.txt", json.dumps(data))
-            self.caer("After Writing")
+            #self.caer("After Writing")
             self.input_queue1.ack(self.tags_to_ack)
             self.tags_to_ack = []
 

@@ -7,6 +7,8 @@ from hashlib import sha256
 from common.HeartBeater import HeartBeater
 import copy
 from common.AtomicWrite import atomic_write, load_memory
+import random
+
 
 INT_LENGTH = 4
 
@@ -25,17 +27,13 @@ class EofManager:
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
-        # Hay que persistir todo esto?
-        self.active_clients = []
-        self.work_queues_per_client = {}
-        self.exchanges_per_client = {}
-        self.ids_processed = {}
+        self.get_previous_state()
 
     def get_previous_state(self):
         previous_state = load_memory("./data.txt")
         self.work_queues_per_client = previous_state.get('work_queues_per_client', {})
         self.exchanges_per_client = previous_state.get('exchanges_per_client', {})
-        self.active_clients = previous_state.get('active_clients', {})
+        self.active_clients = previous_state.get('active_clients', [])
         self.ids_processed = previous_state.get('ids_processed', {})
 
     def _handle_sigterm(self, *args):
@@ -148,6 +146,12 @@ class EofManager:
 
         return already_added
 
+    def caer(self, location):
+        num = random.random()
+        if num <= 0.05:
+            print(f"ME CAIGO EN {location} At {time.time()}")
+            resultado = 1/0
+
     def _callback(self, body, ack_tag):
         message_id = int(sha256(body).hexdigest(), 16)
 
@@ -163,14 +167,6 @@ class EofManager:
             self.eof_consumer.ack(ack_tag)
             return
 
-        # if line["type"] == "exchange":
-        #     if len(self.base_exchanges[line["exchange"]]["queues_binded"]) == 0:
-        #         self._exchange_without_queues(client_id, line)
-        #     else:
-        #         self._exchange_with_queues(client_id, line)
-
-        # if line["type"] == "work_queue":
-        #     self._queue(client_id, line)
         self.process_eof(line, client_id)
 
         data = {
@@ -180,6 +176,7 @@ class EofManager:
             "ids_processed": self.ids_processed
         }
         atomic_write("./data.txt", json.dumps(data))
+        self.caer("a")
         self.eof_consumer.ack(ack_tag)
 
     def run(self):

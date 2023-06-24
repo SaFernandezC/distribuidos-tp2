@@ -1,6 +1,3 @@
-from time import sleep
-
-from .utils import get_docker_id
 from .Connection import Connection
 
 HEARTBEATS_TOPIC = "heartbeat_ask"

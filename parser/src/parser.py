@@ -16,7 +16,7 @@ class Parser():
         self.connection = Connection()
 
         self.input_queue = self.connection.Consumer(queue_name=input_queue)
-        self.eof_manager = self.connection.EofProducer(output_exchange, output_exchange_type, input_queue)
+        self.eof_manager = self.connection.EofProducer(output_exchange, output_exchange_type, node_id)
         self.output_queue = self.connection.Publisher(output_exchange, output_exchange_type)
         self.hearbeater = HeartBeater(self.connection, node_id)
 

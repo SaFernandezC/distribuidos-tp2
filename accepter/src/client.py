@@ -20,7 +20,7 @@ class Client:
         self.results_lock = results_lock
 
         self.connection = Connection()
-        self.eof_manager = self.connection.EofProducer(None, None, None)
+        self.eof_manager = self.connection.EofProducer(None, None, "Accepter")
         self.trips_queue = self.connection.Producer(queue_name="trip")
         self.weathers_queue = self.connection.Producer(queue_name="weather")
         self.stations_queue = self.connection.Producer(queue_name="station")

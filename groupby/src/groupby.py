@@ -119,13 +119,13 @@ class Groupby:
                 "ids_processed": self.ids_processed
             }
             atomic_write("./data.txt", json.dumps(data))
-            self.caer("A")
+            #self.caer("A")
             self.input_queue.ack(self.tags_to_ack)
             self.tags_to_ack = []
 
     def caer(self, location):
         num = random.random()
-        if num <= 0.3:
+        if num <= 0.05:
             print(f"ME CAIGO EN {location}")
             resultado = 1/0
 

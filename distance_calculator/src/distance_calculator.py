@@ -14,7 +14,7 @@ class DistanceCalculator:
 
         self.connection = Connection()
         self.input_queue = self.connection.Consumer(input_queue_name)
-        self.eof_manager = self.connection.EofProducer(None, output_queue_name, input_queue_name)
+        self.eof_manager = self.connection.EofProducer(None, output_queue_name, node_id)
         self.output_queue = self.connection.Producer(output_queue_name)
         self.hearbeater = HeartBeater(self.connection, node_id)
 

@@ -4,21 +4,21 @@ import logging
 INT_LENGTH = 4
 
 class EofQueue():
-    def __init__(self, channel, output_exchange, output_queue, input_queue):
+    def __init__(self, channel, output_exchange, output_queue, container_id):
         try:
             self.channel = channel
             self.output_exchange = output_exchange
             self.output_queue = output_queue
-            self.input_queue = input_queue
+            self.container_id = container_id
             self.user_callback = None
 
             self.queue = channel.queue_declare(queue='eof_manager', durable=True)
             self.queue_name = self.queue.method.queue
 
             if not output_exchange:
-                self.eof_msg = {"type":"work_queue", "queue": output_queue}
+                self.eof_msg = {"type":"work_queue", "queue": output_queue, "container_id": container_id}
             else:
-                self.eof_msg = {"type":"exchange", "exchange": output_exchange}
+                self.eof_msg = {"type":"exchange", "exchange": output_exchange, "container_id": container_id}
         except Exception as e:
             logging.error(f"Eof Queue: Error creating queue {e}")
 
@@ -41,6 +41,9 @@ class EofQueue():
         try:
             if not msg:
                 msg = self.eof_msg
+
+            if "container_id" not in msg:
+                msg["container_id"] = self.container_id
             
             msg["client_id"] = client_id
             self.channel.basic_publish(exchange='',

@@ -6,7 +6,7 @@ from threading import Thread, Lock
 import logging
 import subprocess
 
-TIME_BETWEEN = 20
+TIME_BETWEEN = 5
 DEAD_TIME = 3 * TIME_BETWEEN
 
 

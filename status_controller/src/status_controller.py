@@ -66,3 +66,5 @@ class StatusController:
         self.input_queue.receive(self._callback)
         self.connection.start_consuming()
         self.connection.close()
+
+#Test

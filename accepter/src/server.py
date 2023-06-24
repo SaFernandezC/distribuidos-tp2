@@ -52,7 +52,7 @@ class Server:
         while self.is_alive:
             client_sock = self.__accept_new_connection()
             if client_sock:
-                client = Client(self.id_counter, client_sock, self.protocol, self.results, self.results_lock)
+                client = Client(str(self.id_counter), client_sock, self.protocol, self.results, self.results_lock)
                 thread = threading.Thread(target=client.run)
                 thread.start()
                 self.client_threads.append(thread) # Guardar el cliente tambien?

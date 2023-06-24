@@ -176,7 +176,7 @@ class EofManager:
             "ids_processed": self.ids_processed
         }
         atomic_write("./data.txt", json.dumps(data))
-        self.caer("a")
+        # self.caer("a")
         self.eof_consumer.ack(ack_tag)
 
     def run(self):

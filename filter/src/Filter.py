@@ -102,6 +102,8 @@ class Filter:
             # self.connection.stop_consuming()
             self.eof_manager.send_eof(client_id)
             print(f"Recibo eof de cliente: {client_id}-> Envio EOF")
+        elif "clean" in batch:
+            self.eof_manager.send_eof(client_id, msg_type="clean")
         else:
             data = []
             for item in batch["data"]:

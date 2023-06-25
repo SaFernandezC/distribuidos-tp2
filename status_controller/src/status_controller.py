@@ -4,7 +4,7 @@ import signal
 import logging
 from common.HeartBeater import HeartBeater
 from common.AtomicWrite import atomic_write, load_memory
-from hashlib import sha256
+
 import random
 import time
 
@@ -26,6 +26,7 @@ class StatusController:
     def get_previous_state(self):
         previous_state = load_memory("./data.txt")
         self.data = previous_state.get('data', {})
+        self.clients_finished = previous_state.get("clients_finished", [])
 
     def _handle_sigterm(self, *args):
         """
@@ -39,7 +40,27 @@ class StatusController:
         if num <= 0.25:
             print(f"ME CAIGO EN {location} At {time.time()}")
             resultado = 1/0
-        
+
+    def save_memory(self):
+        data = {
+            "data": self.data,
+            "clients_finished": self.clients_finished,
+        }
+        atomic_write("./data.txt", json.dumps(data))
+
+    def clean_clients(self):
+        clients_deleted = []
+        for client in self.clients_finished:
+            if client in self.data:
+                self.data.pop(client)
+                clients_deleted.append(client)
+
+        for client in clients_deleted:
+            self.clients_finished.remove(client)
+
+        if len(clients_deleted) > 0:
+            self.save_memory()
+
     def _callback(self, body, ack_tag):        
         line = json.loads(body.decode())
         client_id = str(line["client_id"])
@@ -52,19 +73,14 @@ class StatusController:
         if len(self.data[client_id]) == self.qty_of_queries:
             data_to_send = {"client_id": client_id, "data": self.data[client_id]}
             self.output_queue.send(json.dumps(data_to_send))
-            # print(f"Resultado de cliente {client_id}: ", self.data[client_id])
+            self.clients_finished.append(client_id)
 
-        data = {
-            "data": self.data,
-        }
-        atomic_write("./data.txt", json.dumps(data))
-        self.caer("a")
+        self.save_memory()
         self.input_queue.ack(ack_tag)
+        self.clean_clients()
 
     def run(self):
         self.hearbeater.start()
         self.input_queue.receive(self._callback)
         self.connection.start_consuming()
         self.connection.close()
-
-#Test

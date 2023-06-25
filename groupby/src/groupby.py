@@ -149,6 +149,9 @@ class Groupby:
             else:
                 filtered = None
             self.output_queue.send(json.dumps({"client_id": client_id, "query": self.query, "results": filtered}))
+        elif "clean" in batch:
+            #Borrar datos
+            print("Clean ")
         else:
             self._group(client_id, batch["data"])
 

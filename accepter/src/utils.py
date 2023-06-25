@@ -2,6 +2,15 @@ from common.Connection import Connection
 from common.HeartBeater import HeartBeater
 import ujson as json
 
+class CleanSender():
+    def __init__(self, node_id):
+        self.connection = Connection()
+        self.eof_manager = self.connection.EofProducer(None, None, node_id)
+
+    def send_clean(self, client_id):
+        for key in ['trip', 'station', 'weather']:
+            self.eof_manager.send_eof(client_id, {"type":"work_queue", "queue": key}, msg_type="clean")
+
 class Asker():
     def __init__(self, results, results_lock, node_id):
         self.connection = Connection()

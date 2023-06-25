@@ -77,7 +77,6 @@ def add_monitors(docker_file, monitor_base, monitor_id, monitors_amount, nodes_t
     docker_f.close()
     node_f.close()
 
-
 def create_nodes_list(args):
     nodes = BASE_NODES.copy()
     for i in range(args.trip_parser):
@@ -157,7 +156,6 @@ def create_compose(args):
     for i in range(args.dist_calculator):
         copy_module(file_name, BASE_FOLDER+"distance_calculator.txt", i+1)
 
-
 def create_exchanges_file(args):
     with open("./eof_manager/exchanges.json", "r") as exchanges:
         data = json.load(exchanges)
@@ -181,7 +179,6 @@ def create_exchanges_file(args):
         exchanges.close()
         with open("./eof_manager/exchanges.json", "w") as outfile:
             outfile.write(json.dumps(data, indent=4))
-
 
 def create_queues_file(args):
     with open("./eof_manager/queues.json", "r") as queues:

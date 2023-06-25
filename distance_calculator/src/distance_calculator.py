@@ -31,6 +31,8 @@ class DistanceCalculator:
         if "eof" in batch:
             # self.connection.stop_consuming()
             self.eof_manager.send_eof(client_id)
+        elif "clean" in batch:
+            self.eof_manager.send_eof(client_id, msg_type="clean")
         else:
             data = []
             for item in batch["data"]:

@@ -64,13 +64,7 @@ class Protocol:
 
         divided_chunk = self._divide_msg(chunk, chunk_size)
         for part in divided_chunk:
-            skt.send_msg(part)        
-
-    def _recv_chunk(self, skt):
-        batch_size_bytes = skt.recv_msg(self.cant_bytes_len)
-        batch_size = int.from_bytes(batch_size_bytes, byteorder='big')
-        batch = skt.recv_msg(batch_size).decode()
-        return batch
+            skt.send_msg(part)
 
     def send_weather(self, skt, city, data):
         skt.send_msg(bytes(SEND_DATA, 'utf-8'))
@@ -123,7 +117,6 @@ class Protocol:
     def finish_sending_data(self, skt):
         skt.send_msg(bytes(SEND_FINISH, 'utf-8'))
 
-
     def ask_results(self, skt):
         skt.send_msg(bytes(ASK_DATA, 'utf-8'))
         res = json.loads(self._recv_chunk(skt))
@@ -143,3 +136,20 @@ class Protocol:
         response = True if ack == ACK_OK else False
         logging.debug(f'action: Receive ack | result: success | ip: {skt.get_addr()} | msg: {response}')
         return response
+
+    def _recv_chunk(self, skt):
+        batch_size_bytes = skt.recv_msg(self.cant_bytes_len)
+        batch_size = int.from_bytes(batch_size_bytes, byteorder='big')
+        batch = skt.recv_msg(batch_size).decode()
+        return batch
+
+    def send_status(self, skt, id, status):
+        msg = {"id": id, "status": status}
+        batch = bytes(json.dumps(msg), 'utf-8')
+        batch_size = len(batch)
+        self._send_chunk(skt, batch, batch_size)
+
+    def recv_status(self, skt): 
+        status = self._recv_chunk(skt)
+        return json.loads(status)
+        

@@ -34,6 +34,8 @@ class Parser():
             # self.connection.stop_consuming()
             self.eof_manager.send_eof(client_id)
             print(f"RECIBO EOF DE CLEINTE {client_id}-> ENVIO EOF")
+        elif "clean" in batch:
+            self.eof_manager.send_eof(client_id, msg_type="clean")
         else:
             send(self.output_queue, batch["data"], client_id)
         self.input_queue.ack(ack_tag)

@@ -37,10 +37,12 @@ class EofQueue():
         except Exception as e:
             logging.error(f"Eof Queue: Error on callback {e}")
 
-    def send_eof(self, client_id, msg=None):
+    def send_eof(self, client_id, msg=None, msg_type="eof"):
         try:
             if not msg:
                 msg = self.eof_msg
+            
+            msg[msg_type] = True
 
             if "container_id" not in msg:
                 msg["container_id"] = self.container_id

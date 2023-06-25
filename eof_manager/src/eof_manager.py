@@ -9,7 +9,8 @@ import copy
 from common.AtomicWrite import atomic_write, load_memory
 import random
 
-
+EOF_TYPE = "eof_received"
+CLEAN_TYPE = "clean_received"
 INT_LENGTH = 4
 
 class EofManager:
@@ -80,52 +81,62 @@ class EofManager:
             file.close()
         return exchanges, work_queues
 
-    def build_eof_msg(self, client_id):
-        return json.dumps({"client_id":client_id, "eof": True})
+    def build_eof_msg(self, client_id, message_type):
+        if message_type == EOF_TYPE:
+            return json.dumps({"client_id":client_id, "eof": True})
+        elif message_type == CLEAN_TYPE:
+            return json.dumps({"client_id":client_id, "clean": True})
 
-    def _exchange_with_queues(self, client_id, line):
+    def _exchange_with_queues(self, client_id, line, message_type):
         exchange = self.exchanges_per_client[client_id][line["exchange"]]
         writing = exchange["writing"]
-        exchange["eof_received"] += 1
+        exchange[message_type] += 1
         queues_binded = exchange["queues_binded"]
 
-        if exchange["eof_received"] == writing:
+        if exchange[message_type] == writing:
             for queue_name, queue_data in queues_binded.items():
                 listening = queue_data["listening"]
                 for i in range(listening):
-                    self.queues_connection[queue_name].send(self.build_eof_msg(client_id))
+                    self.queues_connection[queue_name].send(self.build_eof_msg(client_id, message_type))
                     # print(f"{time.asctime(time.localtime())} ENVIO EOF A COLA {queue_name} DE EXCHANFE: ", line["exchange"])
 
-    def _exchange_without_queues(self, client_id, line):
+    def _exchange_without_queues(self, client_id, line, message_type):
         exchange = self.exchanges_per_client[client_id][line["exchange"]]
         writing = exchange["writing"]
-        exchange["eof_received"] += 1    
-        # print(f"{time.asctime(time.localtime())} Exch sin colas EOF PARCIAL :", exchange["eof_received"])
-        if exchange["eof_received"] == writing:
-            self.exchange_connections[line["exchange"]].send(self.build_eof_msg(client_id))
+        exchange[message_type] += 1    
+        # print(f"{time.asctime(time.localtime())} Exch sin colas EOF PARCIAL :", exchange[message_type])
+        if exchange[message_type] == writing:
+            self.exchange_connections[line["exchange"]].send(self.build_eof_msg(client_id, message_type))
 
-    def _queue(self, client_id, line):
+    def _queue(self, client_id, line, message_type):
         queue = line["queue"]
         writing = self.work_queues_per_client[client_id][queue]["writing"]
         listening = self.work_queues_per_client[client_id][queue]["listening"]
 
-        self.work_queues_per_client[client_id][queue]["eof_received"] += 1
+        self.work_queues_per_client[client_id][queue][message_type] += 1
 
-        if self.work_queues_per_client[client_id][queue]["eof_received"] == writing:
+        if self.work_queues_per_client[client_id][queue][message_type] == writing:
             for i in range(listening):
                 print(f"{time.asctime(time.localtime())} ENVIO EOF DE {client_id} A: {queue} donde hay {listening} listening")
-                self.queues_connection[line["queue"]].send(self.build_eof_msg(client_id))
+                self.queues_connection[line["queue"]].send(self.build_eof_msg(client_id, message_type))
 
 
     def process_eof(self, line, client_id):
+        if "eof" in line:
+            message_type = EOF_TYPE
+        elif "clean" in line:
+            message_type = CLEAN_TYPE
+        else:
+            return
+
         if line["type"] == "exchange":
             if len(self.base_exchanges[line["exchange"]]["queues_binded"]) == 0:
-                self._exchange_without_queues(client_id, line)
+                self._exchange_without_queues(client_id, line, message_type)
             else:
-                self._exchange_with_queues(client_id, line)
+                self._exchange_with_queues(client_id, line, message_type)
 
         if line["type"] == "work_queue":
-            self._queue(client_id, line)
+            self._queue(client_id, line, message_type)
 
 
     def add_new_client(self, client_id):

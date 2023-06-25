@@ -2,12 +2,13 @@ import logging
 import signal
 from common.Socket import Socket
 from .protocol import Protocol
-import multiprocessing
-from common.Connection import Connection
-from .utils import Asker
+# import multiprocessing
+# from common.Connection import Connection
+from .utils import Asker, CleanSender
 from .client import Client
-from common.HeartBeater import HeartBeater
+# from common.HeartBeater import HeartBeater
 import ujson as json
+from common.AtomicWrite import atomic_write, load_memory
 
 import threading
 
@@ -20,6 +21,9 @@ SEND_TRIPS = 'T'
 ASK_DATA = 'A'
 INT_LENGTH = 4
 
+SENDING = "sending"
+WAITING = "waiting"
+
 class Server:
     def __init__(self, port, listen_backlog, node_id):  # TO DO: Add File
         self._server_socket = Socket()
@@ -27,21 +31,41 @@ class Server:
         self._server_socket.listen(listen_backlog)
 
         self.is_alive = True
+        self.node_id = node_id
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
+        self.get_previous_state()
+
         self.protocol = Protocol()
-        self.results = {}
-        self.results_lock = threading.Lock()
-        # self.metrics_queue = self.connection.Consumer(queue_name='metrics')
-        self.asker = Asker(self.results, self.results_lock, node_id)
+
+        self.shared_lock = threading.Lock()
+        
+        self.asker = Asker(self.results, self.shared_lock, node_id)
         self.ask_results = threading.Thread(target=self.asker.run)
-
-        # self.results_queue = multiprocessing.Queue()
-        self.id_counter = self._init_id_counter()
         self.client_threads = []
+        
 
-    def _init_id_counter(self):
-        return 0
+
+    def get_previous_state(self):
+        previous_state = load_memory("./data.txt")
+        self.clients_state = previous_state.get('clients_state', {})
+        self.results = previous_state.get('results', {})
+        self.id_counter = previous_state.get('id_counter', 0)   
+
+    # def check_previous_state(self):
+    #     clean_sender = CleanSender(self.node_id)
+    #     for client_id, status in self.clients_state.items():
+    #         if status == SENDING:
+    #             clean_sender.send_clean(client_id)
+
+    def save_memory(self):
+        with self.shared_lock:
+            data = {
+                "clients_state": self.clients_state,
+                "results": self.results,
+                "id_counter": self.id_counter,
+            }
+            atomic_write("./data.txt", json.dumps(data))
 
     def run(self):
         """
@@ -52,11 +76,16 @@ class Server:
         while self.is_alive:
             client_sock = self.__accept_new_connection()
             if client_sock:
-                client = Client(str(self.id_counter), client_sock, self.protocol, self.results, self.results_lock)
+                # client_id = str(self.id_counter)
+                client = Client(client_sock, self.protocol, self.results, self.shared_lock, self.clients_state, self.id_counter)
                 thread = threading.Thread(target=client.run)
                 thread.start()
-                self.client_threads.append(thread) # Guardar el cliente tambien?
-                self.id_counter += 1
+                self.client_threads.append(thread)
+
+                # self.clients_state[client_id] = SENDING
+                # self.id_counter += 1
+                # self.save_memory()
+                # Save state
             elif self.is_alive:
                 self.stop()
 

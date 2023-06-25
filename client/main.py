@@ -35,6 +35,45 @@ def initialize_log(logging_level):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
+def send_data(client):
+    weathers = {
+        "montreal": "./data/montreal/weather.csv",
+        "toronto": "./data/toronto/weather.csv",
+        "washington": "./data/washington/weather.csv"
+    }
+
+    client.send_weathers(weathers)
+
+    stations = {
+        "montreal": "./data/montreal/stations.csv",
+        "toronto": "./data/toronto/stations.csv",
+        "washington": "./data/washington/stations.csv"
+    }
+    client.send_stations(stations)
+    
+    trips = {
+        "montreal": "./data/montreal/reduced_trips_montreal.csv",
+        "toronto": "./data/toronto/reduced_trips_toronto.csv",
+        "washington": "./data/washington/reduced_trips_washington.csv"
+    }
+    client.send_trips(trips)
+            
+
+
+def ask_for_data(client):
+    ready = False
+    while not ready:
+        ready, data = client.ask_results()
+        logging.info("Waiting for data")
+        time.sleep(5)
+    
+    if data is not None:
+        logging.info("Data ready")
+        print("Query1: ", data["query1"])
+        print("*------------------*")
+        print("Query2: ", data["query2"])
+        print("*------------------*")
+        print("Query3: ", data["query3"])
 
 def main():
     config_params = initialize_config()
@@ -51,48 +90,18 @@ def main():
                   f"server_port: {server_port} | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    try:
-        client = Client(server_ip, server_port, lines_per_batch)
-
-        weathers = {
-            "montreal": "./data/montreal/weather.csv",
-            "toronto": "./data/toronto/weather.csv",
-            "washington": "./data/washington/weather.csv"
-        }
-
-        client.send_weathers(weathers)
-
-        stations = {
-            "montreal": "./data/montreal/stations.csv",
-            "toronto": "./data/toronto/stations.csv",
-            "washington": "./data/washington/stations.csv"
-        }
-        client.send_stations(stations)
-        
-        trips = {
-            "montreal": "./data/montreal/reduced_trips_montreal.csv",
-            "toronto": "./data/toronto/reduced_trips_toronto.csv",
-            "washington": "./data/washington/reduced_trips_washington.csv"
-        }
-
-        client.send_trips(trips)
-
-        ready = False
-        while not ready:
-            ready, data = client.ask_results()
-            logging.info("Waiting for data")
-            time.sleep(2)
-        
-        logging.info("Data ready")
-        print("Query1: ", data["query1"])
-        print("*------------------*")
-        print("Query2: ", data["query2"])
-        print("*------------------*")
-        print("Query3: ", data["query3"])
-        # ready, data = client.ask_results()
-        client.send_finish()
-    except Exception as e:
-        logging.error("Error: {}".format(e))
+    while True:
+        try:
+            logging.info("Connecting to server")
+            client = Client(server_ip, server_port, lines_per_batch)
+            client.send_status()
+            send_data(client)
+            ask_for_data(client)
+            client.send_finish()
+            break
+        except Exception as e:
+            logging.error("Error: {}".format(e))
+            time.sleep(5)
 
 
 if __name__ == "__main__":

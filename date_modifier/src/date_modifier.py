@@ -71,6 +71,8 @@ class DateModifier():
         if "eof" in batch:
             # self.connection.stop_consuming()
             self.eof_manager.send_eof(client_id)
+        elif "clean" in batch:
+            self.eof_manager.send_eof(client_id, msg_type="clean")
         else:
             for item in batch["data"]:
                 item['date'] = self._restar_dia(item['date'])

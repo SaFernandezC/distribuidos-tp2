@@ -5,6 +5,10 @@ import signal
 import json
 
 
+SENDING = "sending"
+WAITING = "waiting"
+FINISH = "finish"
+
 class Client:
     def __init__(self, server_ip, server_port, lines_per_batch):
         try:
@@ -12,14 +16,26 @@ class Client:
             self.client_socket.connect(server_ip, server_port)
             self.protocol = Protocol()
             self.lines_per_batch = lines_per_batch
+            
+            self.id = None
+            self.status = SENDING
 
             signal.signal(signal.SIGTERM, self._handle_sigterm)
         except Exception as e:
             self.stop()
             logging.error("action: create client | result: fail | error: {}".format(e))
 
+    def send_status(self):
+        self.protocol.send_status(self.client_socket, self.id, self.status)
+        status_recv = self.protocol.recv_status()
+        self.id = status_recv["id"]
+        if status_recv["error"] == True:
+            self.status = SENDING
+
 
     def send_finish(self):
+        if self.status != FINISH:
+            return
         logging.info(f'action: send finish | sending finish')
         try:
             self.protocol.finish_sending_data(self.client_socket)
@@ -33,6 +49,8 @@ class Client:
   
 
     def send_weathers(self, weathers):
+        if self.status != SENDING:
+            return
         try:
             for city, path in weathers.items():
                 self.send_data(city, path, self.protocol.send_weather)
@@ -47,6 +65,8 @@ class Client:
 
 
     def send_stations(self, stations):
+        if self.status != SENDING:
+            return
         try:
             for city, path in stations.items():
                 self.send_data(city, path, self.protocol.send_station)
@@ -61,12 +81,15 @@ class Client:
 
 
     def send_trips(self, trips):
+        if self.status != SENDING:
+            return
         try:
             for city, path in trips.items():
                 self.send_data(city, path, self.protocol.send_trip)
             self.protocol.send_trips_eof(self.client_socket)
             ack = self.protocol.recv_ack(self.client_socket)
             if(ack):
+                self.status = WAITING
                 logging.debug(f'action: send trips | result: success')
             else:
                 logging.debug(f'action: send trips | result: fail')
@@ -93,7 +116,6 @@ class Client:
         except Exception as e:
             logging.error("action: send data | result: fail | error: {}".format(e)) 
 
-
     def next_batch(self, file):
         """
         Reads next lines batch from file.
@@ -108,7 +130,13 @@ class Client:
         return False, lines
 
     def ask_results(self):
-        return self.protocol.ask_results(self.client_socket)
+        if self.status != WAITING:
+            return True, None
+        ready, data = self.protocol.ask_results(self.client_socket)
+
+        if ready:
+            self.status = FINISH
+        return ready, data
 
     def _handle_sigterm(self, *args):
         """

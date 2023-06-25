@@ -119,6 +119,9 @@ class Joiner():
             # Problema de perdida de mensajes si no hay nadie escuchando ahi (solucionado con colas durables y persistente)
             if client_id not in self.eof_received:
                 self.eof_received.append(client_id)
+        elif "clean" in batch:
+            #Borrar Datos
+            print("Clean :)")
         else:
             self._add_item(client_id, batch["data"])
 
@@ -146,6 +149,8 @@ class Joiner():
         if "eof" in batch:
             # print(f"{time.asctime(time.localtime())} RECIBO EOF CALLBACK 2 ---> DEJO DE ESCUCHAR, {batch}")
             self.eof_manager.send_eof(client_id)
+        elif "clean" in batch:
+            self.eof_manager.send_eof(client_id, msg_type="clean")
         else:
             data = []
             for item in batch["data"]:

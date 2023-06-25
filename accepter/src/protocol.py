@@ -105,3 +105,12 @@ class Protocol:
         response = True if ack == ACK_OK else False
         logging.debug(f'action: Receive ack | result: success | ip: {skt.get_addr()} | msg: {response}')
         return response
+
+    def recv_status(self, skt):
+        data = json.loads(self._recv_chunk(skt))
+        return data
+    
+    def send_status(self, skt, data):
+        msg = bytes(json.dumps(data),  'utf-8')
+        msg_size = len(msg)
+        self._send_chunk(skt, msg, msg_size)

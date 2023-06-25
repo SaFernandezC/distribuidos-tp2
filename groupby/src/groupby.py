@@ -150,17 +150,12 @@ class Groupby:
                 filtered = None
             self.output_queue.send(json.dumps({"client_id": client_id, "query": self.query, "results": filtered}))
         elif "clean" in batch:
-            #Borrar datos
-            print("Clean ")
+            self.group_table.pop(client_id, None)
+            self.ids_processed.pop(client_id, None)
         else:
             self._group(client_id, batch["data"])
 
         force_ack = "clean" in batch or "eof" in batch
-
-        if "clean" in batch:
-            self.ids_processed.pop(client_id, None)
-            self.group_table.pop(client_id, None)
-
         self.ack(force_ack)
 
     def run(self):

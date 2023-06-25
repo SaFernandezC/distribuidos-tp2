@@ -33,7 +33,6 @@ class Parser():
         if "eof" in batch:
             # self.connection.stop_consuming()
             self.eof_manager.send_eof(client_id)
-            print(f"RECIBO EOF DE CLEINTE {client_id}-> ENVIO EOF")
         elif "clean" in batch:
             self.eof_manager.send_eof(client_id, msg_type="clean")
         else:

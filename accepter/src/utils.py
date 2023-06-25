@@ -11,6 +11,16 @@ class CleanSender():
         for key in ['trip', 'station', 'weather']:
             self.eof_manager.send_eof(client_id, {"type":"work_queue", "queue": key}, msg_type="clean")
 
+class SharedInteger():
+    def __init__(self, initial_value):
+        self.value = initial_value
+    
+    def increment(self):
+        self.value += 1
+    
+    def get(self):
+        return self.value
+
 class Asker():
     def __init__(self, results, results_lock, node_id):
         self.connection = Connection()

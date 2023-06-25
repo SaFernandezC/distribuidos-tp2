@@ -98,13 +98,13 @@ class EofManager:
                 listening = queue_data["listening"]
                 for i in range(listening):
                     self.queues_connection[queue_name].send(self.build_eof_msg(client_id, message_type))
-                    # print(f"{time.asctime(time.localtime())} ENVIO EOF A COLA {queue_name} DE EXCHANFE: ", line["exchange"])
+                    # print(f"{time.asctime(time.localtime())} ENVIO {message_type} A COLA {queue_name} DE EXCHANFE: ", line["exchange"])
 
     def _exchange_without_queues(self, client_id, line, message_type):
         exchange = self.exchanges_per_client[client_id][line["exchange"]]
         writing = exchange["writing"]
         exchange[message_type] += 1    
-        # print(f"{time.asctime(time.localtime())} Exch sin colas EOF PARCIAL :", exchange[message_type])
+        print(f"{time.asctime(time.localtime())} Exch sin colas EOF PARCIAL :", exchange[message_type])
         if exchange[message_type] == writing:
             self.exchange_connections[line["exchange"]].send(self.build_eof_msg(client_id, message_type))
 
@@ -117,8 +117,11 @@ class EofManager:
 
         if self.work_queues_per_client[client_id][queue][message_type] == writing:
             for i in range(listening):
-                print(f"{time.asctime(time.localtime())} ENVIO EOF DE {client_id} A: {queue} donde hay {listening} listening")
-                self.queues_connection[line["queue"]].send(self.build_eof_msg(client_id, message_type))
+                # print(f"{time.asctime(time.localtime())} ENVIO {message_type} DE {client_id} A: {queue} donde hay {listening} listening")
+                self.queues_connection[queue].send(self.build_eof_msg(client_id, message_type))
+            
+            # if queue.find("groupby") > 0:
+            #     self.groupby_sent[client_id] += 1
 
 
     def process_eof(self, line, client_id):
@@ -140,7 +143,7 @@ class EofManager:
 
 
     def add_new_client(self, client_id):
-        logging.info(f"Adding new client: {client_id}")
+        # logging.info(f"Adding new client: {client_id}")
         self.active_clients.append(client_id)
         self.exchanges_per_client[client_id] = copy.deepcopy(self.base_exchanges)
         self.work_queues_per_client[client_id] = copy.deepcopy(self.base_work_queues)
@@ -163,6 +166,16 @@ class EofManager:
             print(f"ME CAIGO EN {location} At {time.time()}")
             resultado = 1/0
 
+    def save_memory(self):
+        data = {
+            "work_queues_per_client": self.work_queues_per_client,
+            "exchanges_per_client": self.exchanges_per_client,
+            "active_clients": self.active_clients,
+            "ids_processed": self.ids_processed
+        }
+        atomic_write("./data.txt", json.dumps(data))
+
+
     def _callback(self, body, ack_tag):
         message_id = int(sha256(body).hexdigest(), 16)
 
@@ -177,17 +190,11 @@ class EofManager:
         if duplicated:
             self.eof_consumer.ack(ack_tag)
             return
+        
+        # print(f"Recibi {line} de cliente {client_id}")
 
         self.process_eof(line, client_id)
-
-        data = {
-            "work_queues_per_client": self.work_queues_per_client,
-            "exchanges_per_client": self.exchanges_per_client,
-            "active_clients": self.active_clients,
-            "ids_processed": self.ids_processed
-        }
-        atomic_write("./data.txt", json.dumps(data))
-        # self.caer("a")
+        self.save_memory()
         self.eof_consumer.ack(ack_tag)
 
     def run(self):

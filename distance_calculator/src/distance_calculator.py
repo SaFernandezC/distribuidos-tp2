@@ -28,8 +28,8 @@ class DistanceCalculator:
     def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
+        
         if "eof" in batch:
-            # self.connection.stop_consuming()
             self.eof_manager.send_eof(client_id)
         elif "clean" in batch:
             self.eof_manager.send_eof(client_id, msg_type="clean")

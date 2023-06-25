@@ -44,7 +44,8 @@ class Joiner():
         previous_state = load_memory("./data.txt")
         self.side_table = previous_state.get('side_table', {})
         self.ids_processed = previous_state.get('ids_processed', {})
-        self.eof_received = previous_state.get('eof_received', [])
+        self.eof_received_1 = previous_state.get('eof_received_1', [])
+        self.eof_received_2 = previous_state.get('eof_received_2', [])
 
     def _handle_sigterm(self, *args):
         """
@@ -90,16 +91,20 @@ class Joiner():
         if num < 0.1:
             print(f"ME CAIGO EN {location}")
             resultado = 1/0   
+    
+    def save_memory(self):
+        data = {
+            "side_table": self.side_table,
+            "ids_processed": self.ids_processed,
+            "eof_received_1": self.eof_received_1,
+            "eof_received_2": self.eof_received_2,
+        }
+        atomic_write("./data.txt", json.dumps(data))
 
     def ack(self, forced):
         if len(self.tags_to_ack) >= MESSAGES_BATCH or forced:
-            data = {
-                "side_table": self.side_table,
-                "ids_processed": self.ids_processed,
-                "eof_received": self.eof_received,
-            }
-            atomic_write("./data.txt", json.dumps(data))
-            #self.caer("After Writing")
+            self.save_memory()
+            # Se Cae Aca
             self.input_queue1.ack(self.tags_to_ack)
             self.tags_to_ack = []
 
@@ -116,17 +121,21 @@ class Joiner():
             return
 
         if "eof" in batch:
-            # Problema de perdida de mensajes si no hay nadie escuchando ahi (solucionado con colas durables y persistente)
-            if client_id not in self.eof_received:
-                self.eof_received.append(client_id)
+            print(f"Recibo EOF de {client_id} EN CALLBACK1")
+            if client_id not in self.eof_received_1:
+                self.eof_received_1.append(client_id)
         elif "clean" in batch:
-            # Borrar Datos
-            print("Clean :)")
+            print(f"ME LLEGA CLEAN DE {client_id}")
+            self.eof_manager.send_eof(client_id, msg_type="clean")
+            if client_id in self.eof_received_1:
+                self.eof_received_1.remove(client_id)
+            if client_id in self.eof_received_2:
+                self.eof_received_2.remove(client_id)
+            self.side_table.pop(client_id, None)
+            self.ids_processed.pop(client_id, None)
         else:
             self._add_item(client_id, batch["data"])
 
-        # atomic_write("./data.txt", json.dumps(data))
-        # self.input_queue1.ack(ack_tag)
         force_ack = "clean" in batch or "eof" in batch
         self.ack(force_ack)
 
@@ -140,17 +149,23 @@ class Joiner():
 
     def _callback_queue2(self, body, ack_tag):
         batch = json.loads(body.decode())
-        client_id = str(batch["client_id"])
+        client_id = str(batch["client_id"])        
 
-        if client_id not in self.eof_received:
+        if client_id not in self.eof_received_1:
             self.input_queue2.nack(ack_tag)
             return
 
         if "eof" in batch:
+            print(f"RECIBO EOF DE {client_id} EN CALLBACK2 {batch}")
             # print(f"{time.asctime(time.localtime())} RECIBO EOF CALLBACK 2 ---> DEJO DE ESCUCHAR, {batch}")
-            self.eof_manager.send_eof(client_id)
-        elif "clean" in batch:
-            self.eof_manager.send_eof(client_id, msg_type="clean")
+            if client_id not in self.eof_received_2:
+                self.eof_manager.send_eof(client_id)
+                self.eof_received_2.append(client_id)
+                self.save_memory()
+            else:
+                print(f"NACK DE EOF EN CLIENTE {client_id} EN CALLBACK2")
+                self.input_queue2.nack(ack_tag) #Push To New Queue
+                return #No hago Return
         else:
             data = []
             for item in batch["data"]:

@@ -64,15 +64,3 @@ def load_memory(filename, encoding="utf-8"):
     
     with open(file, "r", encoding=encoding) as f:
         return json.load(f)
-
-
-
-
-# if __name__ == "__main__":
-#     try:
-#         atomic_write("test.txt", "Hola!")
-#         print(get_current_file("test.txt"))
-#     except Exception as err:
-#         print("Error")
-#         print(err)
-#     exit = input("Exit")

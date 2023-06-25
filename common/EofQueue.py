@@ -37,19 +37,20 @@ class EofQueue():
         except Exception as e:
             logging.error(f"Eof Queue: Error on callback {e}")
 
-    def send_eof(self, client_id, msg=None, msg_type="eof"):
+    def send_eof(self, client_id, msg:dict=None, msg_type="eof"):
         try:
             if not msg:
                 msg = self.eof_msg
+            msg_copy = msg.copy()
 
-            msg[msg_type] = True
+            msg_copy[msg_type] = True
 
-            if "container_id" not in msg:
-                msg["container_id"] = self.container_id
+            if "container_id" not in msg_copy:
+                msg_copy["container_id"] = self.container_id
             
-            msg["client_id"] = client_id
+            msg_copy["client_id"] = client_id
             self.channel.basic_publish(exchange='',
                         routing_key=self.queue_name,
-                        body=json.dumps(msg))
+                        body=json.dumps(msg_copy))
         except Exception as e:
             logging.error(f"Eof Queue: Error sending eof {e}")

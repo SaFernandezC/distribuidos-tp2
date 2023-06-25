@@ -99,9 +99,7 @@ class Filter:
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
         if "eof" in batch:
-            # self.connection.stop_consuming()
             self.eof_manager.send_eof(client_id)
-            print(f"Recibo eof de cliente: {client_id}-> Envio EOF")
         elif "clean" in batch:
             self.eof_manager.send_eof(client_id, msg_type="clean")
         else:

@@ -16,6 +16,7 @@ class Joiner():
     def __init__(self, input_exchange_1, input_exchange_type_1, input_queue_name_2, output_queue_name,
                 primary_key, primary_key_2, select, joiner_function, node_id):
 
+        self.node_id = node_id
         self.side_table = {}
         self.fields_to_select = self._parse_select(select)
         self.key1 = self._parse_key(primary_key)
@@ -44,8 +45,7 @@ class Joiner():
         previous_state = load_memory("./data.txt")
         self.side_table = previous_state.get('side_table', {})
         self.ids_processed = previous_state.get('ids_processed', {})
-        self.eof_received_1 = previous_state.get('eof_received_1', [])
-        self.eof_received_2 = previous_state.get('eof_received_2', [])
+        self.eof_received = previous_state.get('eof_received', [])
 
     def _handle_sigterm(self, *args):
         """
@@ -96,8 +96,7 @@ class Joiner():
         data = {
             "side_table": self.side_table,
             "ids_processed": self.ids_processed,
-            "eof_received_1": self.eof_received_1,
-            "eof_received_2": self.eof_received_2,
+            "eof_received": self.eof_received,
         }
         atomic_write("./data.txt", json.dumps(data))
 
@@ -122,15 +121,13 @@ class Joiner():
 
         if "eof" in batch:
             print(f"Recibo EOF de {client_id} EN CALLBACK1")
-            if client_id not in self.eof_received_1:
-                self.eof_received_1.append(client_id)
+            if client_id not in self.eof_received:
+                self.eof_received.append(client_id)
         elif "clean" in batch:
             print(f"ME LLEGA CLEAN DE {client_id}")
             self.eof_manager.send_eof(client_id, msg_type="clean")
-            if client_id in self.eof_received_1:
-                self.eof_received_1.remove(client_id)
-            if client_id in self.eof_received_2:
-                self.eof_received_2.remove(client_id)
+            if client_id in self.eof_received:
+                self.eof_received.remove(client_id)
             self.side_table.pop(client_id, None)
             self.ids_processed.pop(client_id, None)
         else:
@@ -146,27 +143,31 @@ class Joiner():
     def _join(self, client_id, item):
         function = eval(self.joiner_function)
         return function(self.key2, item, self.side_table[client_id])
+    
+    def handle_eof(self, body, batch):
+        client_id = batch["client_id"]
+        if "eof" in batch:
+            msg_type = "eof"
+        else:
+            return False
+
+        if batch["dst"] == self.node_id:
+            self.eof_manager.send_eof(client_id, msg_type=msg_type)
+        else:
+            self.input_queue2.send(body)
+
+        return True
 
     def _callback_queue2(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = str(batch["client_id"])        
 
-        if client_id not in self.eof_received_1:
+        if client_id not in self.eof_received:
             self.input_queue2.nack(ack_tag)
             return
 
-        if "eof" in batch:
-            print(f"RECIBO EOF DE {client_id} EN CALLBACK2 {batch}")
-            # print(f"{time.asctime(time.localtime())} RECIBO EOF CALLBACK 2 ---> DEJO DE ESCUCHAR, {batch}")
-            if client_id not in self.eof_received_2:
-                self.eof_manager.send_eof(client_id)
-                self.eof_received_2.append(client_id)
-                self.save_memory()
-            else:
-                print(f"NACK DE EOF EN CLIENTE {client_id} EN CALLBACK2")
-                self.input_queue2.nack(ack_tag) #Push To New Queue
-                return #No hago Return
-        else:
+        eof = self.handle_eof(body, batch)
+        if not eof:
             data = []
             for item in batch["data"]:
                 joined, res = self._join(client_id, item)

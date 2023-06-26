@@ -7,7 +7,7 @@ from common.HeartBeater import HeartBeater
 
 class DateModifier():
     def __init__(self, input_queue_name, output_exchange, output_exchange_type, node_id):
-
+        self.node_id = node_id
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
         self.connection = Connection()
@@ -64,16 +64,28 @@ class DateModifier():
                 return True
         else:
             return False
+    
+    def handle_eof(self, body, batch):
+        client_id = batch["client_id"]
+        if "eof" in batch:
+            msg_type = "eof"
+        elif "clean" in batch:
+            msg_type = "clean"
+        else:
+            return False
+
+        if batch["dst"] == self.node_id:
+            self.eof_manager.send_eof(client_id, msg_type=msg_type)
+        else:
+            self.input_queue.send(body)
+        
+        return True
 
     def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
-        if "eof" in batch:
-            # self.connection.stop_consuming()
-            self.eof_manager.send_eof(client_id)
-        elif "clean" in batch:
-            self.eof_manager.send_eof(client_id, msg_type="clean")
-        else:
+        eof = self.handle_eof(body, batch)
+        if not eof:
             for item in batch["data"]:
                 item['date'] = self._restar_dia(item['date'])
             self.output_queue.send(json.dumps({"client_id": client_id, "data":batch["data"]}))

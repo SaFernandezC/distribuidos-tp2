@@ -66,36 +66,74 @@ CORRECT_QUERY_1 = {'2014-06-23': {'duration_sec': 390.0, 'count': 2, 'sum': 780.
 CORRECT_QUERY_2 = [['Milton / du Parc', {'2016': 2, '2017': 5}], ['Métro St-Laurent (de Maisonneuve / St-Laurent)', {'2016': 1, '2017': 3}], ['Queen / Wellington', {'2016': 1, '2017': 3}], ['Métro Mont-Royal (Rivard / du Mont-Royal)', {'2016': 2, '2017': 5}], ['du Mont-Royal / Clark', {'2016': 2, '2017': 6}], ['Drolet / Beaubien', {'2016': 1, '2017': 3}], ['Bernard / Jeanne-Mance', {'2016': 1, '2017': 4}], ["Duluth / de l'Esplanade", {'2016': 1, '2017': 3}], ['Métro Charlevoix (Centre / Charlevoix)', {'2016': 1, '2017': 5}], ['de Bullion / du Mont-Royal', {'2016': 1, '2017': 3}], ['Marché Atwater', {'2016': 1, '2017': 3}], ['Marquette / Rachel', {'2016': 1, '2017': 3}], ['Notre-Dame / de la Montagne', {'2016': 1, '2017': 3}], ['University / Prince-Arthur', {'2016': 1, '2017': 4}], ['2nd & G St NE', {'2016': 1, '2017': 3}], ['14th & L St NW', {'2016': 1, '2017': 3}], ['14th & Rhode Island Ave NW', {'2016': 2, '2017': 5}], ['15th & East Capitol St NE', {'2016': 1, '2017': 4}], ['4th St & Madison Dr NW', {'2016': 2, '2017': 6}], ['New Hampshire Ave & 24th St NW', {'2016': 1, '2017': 3}], ["Independence Ave & L'Enfant Plaza SW/DOE", {'2016': 1, '2017': 4}], ['21st & I St NW', {'2016': 1, '2017': 4}], ['8th & O St NW', {'2016': 1, '2017': 4}], ['Thomas Circle', {'2016': 1, '2017': 6}], ['14th & V St NW', {'2016': 1, '2017': 3}], ['New York Ave & 15th St NW', {'2016': 1, '2017': 6}], ['1st & D St SE', {'2016': 1, '2017': 3}], ['Ohio Dr & West Basin Dr SW / MLK & FDR Memorials', {'2016': 1, '2017': 4}], ['15th & K St NW', {'2016': 1, '2017': 3}], ['4th & E St SW', {'2016': 1, '2017': 3}], ['Henry Bacon Dr & Lincoln Memorial Circle NW', {'2016': 1, '2017': 4}]]
 CORRECT_QUERY_3 = [['Côte St-Antoine / Royal', 6.670738828948932], ['Cadillac / Sherbrooke', 7.107107455146269], ['François-Perrault / L.-O.-David', 6.264774436327337], ['LaSalle / Godin', 6.53756885740052], ['Valois / Ste-Catherine', 10.86260696181812], ['Marmier', 8.149483960281302], ['de la Pépinière / Pierre-de-Coubertin', 6.105784349330771], ['Drolet / Gounod', 6.119495936971842]]
 
-def check_query(query_received, query_expected):
-    # if len(query_received) != query_expected:
-    #     return False
+def check_query_1(query_received):
+    if len(query_received) != len(CORRECT_QUERY_1):
+        return False
     
-    # for key, value in query_expected.items():
-    #     received = query_received.get(key)
-    #     if value != received:
-    #         return False
+    for key, value in CORRECT_QUERY_1.items():
+        received = query_received.get(key)
+        if len(value) != len(received):
+            return False
+        if value["duration_sec"] != received["duration_sec"]:
+            return False
+        if value["count"] != received["count"]:
+            return False
+        if value["sum"] != received["sum"]:
+            return False
+    
+    return True
 
-    # return True
+def check_query_2(query_received):
+    if len(query_received) != len(CORRECT_QUERY_2):
+        return False
+    
+    for value in query_received:
+        found = False
+        for expected in CORRECT_QUERY_2:
+            if value[0] == expected[0]:
+                if value[1]["2016"] != expected[1]["2016"]:
+                    return False
+                if value[1]["2017"] != expected[1]["2017"]:
+                    return False
+                found = True
+                break
+        if not found:
+            return False
+    
+    return True
 
-    json_expected = json.dumps(query_expected)
-    json_received = json.dumps(query_received)
+def check_query_3(query_received):
+    if len(query_received) != len(CORRECT_QUERY_3):
+        return False
+    
+    for value in query_received:
+        found = False
+        for expected in CORRECT_QUERY_3:
+            if value[0] == expected[0]:
+                if value[1] != expected[1]:
+                    return False
+                found = True
+                break
+        if not found:
+            return False
+    
+    return True
 
-    return json_expected == json_received
 
 def check_queries(data):
     logging.info("Data ready")
 
-    if not check_query(data["query1"], CORRECT_QUERY_1):
+    if not check_query_1(data["query1"]):
         print(data["query1"])
     else:
         print("QUERY 1 OK")
 
-    if not check_query(data["query2"], CORRECT_QUERY_2):
+    if not check_query_2(data["query2"]):
         print(data["query2"])
     else:
         print("QUERY 2 OK")
-
-    if not check_query(data["query3"], CORRECT_QUERY_3):
+    
+    if not check_query_3(data["query3"]):
         print(data["query3"])
     else:
         print("QUERY 3 OK")
@@ -132,7 +170,8 @@ def main():
                   f"server_port: {server_port} | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    while True:
+    i = 0
+    while True and i != 5:
         print("Inicio Nuevo Cliente!")
         while True:
             try:
@@ -147,6 +186,7 @@ def main():
                 time.sleep(5)
         client.stop()
         time.sleep(10)
+        i += 1
 
 if __name__ == "__main__":
     main()

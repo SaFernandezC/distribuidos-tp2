@@ -8,7 +8,7 @@ from common.HeartBeater import HeartBeater
 class DistanceCalculator:
 
     def __init__(self, input_queue_name, output_queue_name, node_id):
-
+        self.node_id = node_id
         self.running = True
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
@@ -25,15 +25,29 @@ class DistanceCalculator:
         logging.info('SIGTERM received - Shutting server down')
         self.connection.close()
 
+    def handle_eof(self, body, batch):
+        client_id = batch["client_id"]
+        if "eof" in batch:
+            msg_type = "eof"
+        elif "clean" in batch:
+            msg_type = "clean"
+        else:
+            return False
+
+        if batch["dst"] == self.node_id:
+            self.eof_manager.send_eof(client_id, msg_type=msg_type)
+        else:
+            self.input_queue.send(body)
+        
+        return True
+
     def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
         
-        if "eof" in batch:
-            self.eof_manager.send_eof(client_id)
-        elif "clean" in batch:
-            self.eof_manager.send_eof(client_id, msg_type="clean")
-        else:
+        eof = self.handle_eof(body, batch)
+
+        if not eof:
             data = []
             for item in batch["data"]:
                 distance = haversine((item['start_latitude'], item['start_longitude']), (item['end_latitude'], item['end_longitude']))

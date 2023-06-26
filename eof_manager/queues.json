@@ -5,7 +5,7 @@
         "eof_received": 0,
         "clean_received": 0
     },
-    "joiner_1": {
+    "joiner_query_1": {
         "writing": 2,
         "listening": 2,
         "eof_received": 0,
@@ -17,7 +17,7 @@
         "eof_received": 0,
         "clean_received": 0
     },
-    "joiner_2": {
+    "joiner_query_2": {
         "writing": 2,
         "listening": 2,
         "eof_received": 0,
@@ -29,7 +29,7 @@
         "eof_received": 0,
         "clean_received": 0
     },
-    "joiner_3": {
+    "joiner_query_3": {
         "writing": 2,
         "listening": 2,
         "eof_received": 0,
@@ -47,21 +47,21 @@
         "eof_received": 0,
         "clean_received": 0
     },
-    "trip": {
+    "trip_parser": {
         "writing": 1,
-        "listening": 2,
+        "listening": 3,
         "eof_received": 0,
         "clean_received": 0
     },
-    "weather": {
+    "weather_parser": {
         "writing": 1,
-        "listening": 2,
+        "listening": 3,
         "eof_received": 0,
         "clean_received": 0
     },
-    "station": {
+    "station_parser": {
         "writing": 1,
-        "listening": 2,
+        "listening": 3,
         "eof_received": 0,
         "clean_received": 0
     }

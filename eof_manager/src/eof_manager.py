@@ -59,16 +59,16 @@ class EofManager:
             "filter_stations_query2": self.connection.Producer("filter_stations_query2"),
             "filter_stations_query3": self.connection.Producer("filter_stations_query3"),
             "date_modifier": self.connection.Producer("date_modifier"),
-            "joiner_1": self.connection.Producer("joiner_1"),
+            "joiner_query_1": self.connection.Producer("joiner_query_1"),
             "groupby_query_1": self.connection.Producer("groupby_query_1"),
-            "joiner_2": self.connection.Producer("joiner_2"),
+            "joiner_query_2": self.connection.Producer("joiner_query_2"),
             "groupby_query_2": self.connection.Producer("groupby_query_2"),
-            "joiner_3": self.connection.Producer("joiner_3"),
+            "joiner_query_3": self.connection.Producer("joiner_query_3"),
             "distance_calculator": self.connection.Producer("distance_calculator"),
             "groupby_query_3": self.connection.Producer("groupby_query_3"),
-            "trip": self.connection.Producer("trip"),
-            "weather": self.connection.Producer("weather"),
-            "station": self.connection.Producer("station"),
+            "trip_parser": self.connection.Producer("trip"),
+            "weather_parser": self.connection.Producer("weather"),
+            "station_parser": self.connection.Producer("station"),
         }
         return exchanges, queues
 
@@ -81,11 +81,11 @@ class EofManager:
             file.close()
         return exchanges, work_queues
 
-    def build_eof_msg(self, client_id, message_type):
+    def build_eof_msg(self, client_id, message_type, dst=None):
         if message_type == EOF_TYPE:
-            return json.dumps({"client_id":client_id, "eof": True})
+            return json.dumps({"client_id":client_id, "eof": True, "dst": dst})
         elif message_type == CLEAN_TYPE:
-            return json.dumps({"client_id":client_id, "clean": True})
+            return json.dumps({"client_id":client_id, "clean": True, "dst": dst})
 
     def _exchange_with_queues(self, client_id, line, message_type):
         exchange = self.exchanges_per_client[client_id][line["exchange"]]
@@ -97,8 +97,9 @@ class EofManager:
             for queue_name, queue_data in queues_binded.items():
                 listening = queue_data["listening"]
                 for i in range(listening):
-                    self.queues_connection[queue_name].send(self.build_eof_msg(client_id, message_type))
-                    # print(f"{time.asctime(time.localtime())} ENVIO {message_type} A COLA {queue_name} DE EXCHANFE: ", line["exchange"])
+                    dest_key = f"{queue_name}_{i+1}"
+                    print(f"Mando a [Exchange Queue]: {dest_key}")
+                    self.queues_connection[queue_name].send(self.build_eof_msg(client_id, message_type, dest_key))
 
     def _exchange_without_queues(self, client_id, line, message_type):
         exchange = self.exchanges_per_client[client_id][line["exchange"]]
@@ -106,6 +107,8 @@ class EofManager:
         exchange[message_type] += 1    
         print(f"{time.asctime(time.localtime())} Exch sin colas EOF PARCIAL :", exchange[message_type])
         if exchange[message_type] == writing:
+            exchange = line["exchange"]
+            print(f"Mando a [Exchange]: {exchange}")
             self.exchange_connections[line["exchange"]].send(self.build_eof_msg(client_id, message_type))
 
     def _queue(self, client_id, line, message_type):
@@ -117,8 +120,10 @@ class EofManager:
 
         if self.work_queues_per_client[client_id][queue][message_type] == writing:
             for i in range(listening):
+                dest_key = f"{queue}_{i+1}"
+                print(f"Mando a [Queue]: {dest_key}")
                 # print(f"{time.asctime(time.localtime())} ENVIO {message_type} DE {client_id} A: {queue} donde hay {listening} listening")
-                self.queues_connection[queue].send(self.build_eof_msg(client_id, message_type))
+                self.queues_connection[queue].send(self.build_eof_msg(client_id, message_type, dest_key))
             
             # if queue.find("groupby") > 0:
             #     self.groupby_sent[client_id] += 1

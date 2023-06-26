@@ -19,6 +19,7 @@ class Parser():
         self.eof_manager = self.connection.EofProducer(output_exchange, output_exchange_type, node_id)
         self.output_queue = self.connection.Publisher(output_exchange, output_exchange_type)
         self.hearbeater = HeartBeater(self.connection, node_id)
+        self.node_id = node_id
 
     def _handle_sigterm(self, *args):
         """
@@ -27,15 +28,28 @@ class Parser():
         logging.info('SIGTERM received - Shutting server down')
         self.connection.close()
 
-    def _callback(self, body, ack_tag):
-        batch = json.loads(body.decode())
+    def handle_eof(self, body, batch):
         client_id = batch["client_id"]
         if "eof" in batch:
-            # self.connection.stop_consuming()
-            self.eof_manager.send_eof(client_id)
+            msg_type = "eof"
         elif "clean" in batch:
-            self.eof_manager.send_eof(client_id, msg_type="clean")
+            msg_type = "clean"
         else:
+            return False
+            
+        if batch["dst"] == self.node_id:
+            self.eof_manager.send_eof(client_id, msg_type=msg_type)
+        else:
+            self.input_queue.send(body)
+        
+        return True
+
+    def _callback(self, body, ack_tag):
+        batch = json.loads(body.decode())
+        eof = self.handle_eof(body, batch)
+            
+        if not eof:
+            client_id = batch["client_id"]
             send(self.output_queue, batch["data"], client_id)
         self.input_queue.ack(ack_tag)
     

@@ -7,6 +7,7 @@ SUBSCRIBER = "sub"
 class ExchangeQueue():
     def __init__(self, type, channel, exchange_name, exchange_type, queue_name=None, routing_keys=None):
         try:
+            self.type = type
             self.channel = channel
             self.exchange_name = exchange_name
             self.exchange_type = exchange_type
@@ -72,6 +73,18 @@ class ExchangeQueue():
                 raise Exception(f"Not Valid ACK Element {ack_element}")                
         except Exception as e:
             logging.error(f"Work Queue: Error sending nack {e}")
+
+
+    def resend_bind_queue(self, message):
+        try:
+            if self.type == PUBLISHER:
+                return
+            self.channel.basic_publish(exchange="",
+                        routing_key=self.queue_name,
+                        body=message,
+                        properties=pika.BasicProperties(delivery_mode=2))  # message persistent
+        except Exception as e:
+            logging.error(f"Exchange Queue: Error resending message to binded queue {e}")
 
     def send(self, message, routing_key=''):
         try:

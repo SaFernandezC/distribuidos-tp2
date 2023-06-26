@@ -48,11 +48,11 @@ class Client:
         self.protocol.send_ack(self.client_sock, True)
 
     def send_eof(self, key):
-        self.eof_manager.send_eof(self.id, {"type":"work_queue", "queue": key})
+        self.eof_manager.send_eof(self.id, {"type":"work_queue", "queue": key+"_parser"})
     
     def send_clean(self):
         for key in ['trip', 'station', 'weather']:
-            self.eof_manager.send_eof(self.id, {"type":"work_queue", "queue": key}, msg_type="clean")
+            self.eof_manager.send_eof(self.id, {"type":"work_queue", "queue": key+"_parser"}, msg_type="clean")
 
     def recv_eof(self, key): 
         logging.debug(f'action: receiving eof')

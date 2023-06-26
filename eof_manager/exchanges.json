@@ -1,6 +1,6 @@
 {
     "weathers": {
-        "writing": 2,
+        "writing": 3,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {
@@ -10,7 +10,7 @@
         }
     },
     "trips": {
-        "writing": 2,
+        "writing": 3,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {
@@ -26,7 +26,7 @@
         }
     },
     "stations": {
-        "writing": 2,
+        "writing": 3,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {

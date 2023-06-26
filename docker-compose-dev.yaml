@@ -26,42 +26,42 @@ services:
     ports:
     - 15672:15672
 
-  accepter:
-    container_name: accepter
+  accepter_1:
+    container_name: accepter_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=accepter
+    - ID=accepter_1
     image: accepter:latest
     links:
     - rabbitmq
     networks:
     - testing_net
     
-  eof_manager:
-    container_name: eof_manager
+  eof_manager_1:
+    container_name: eof_manager_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=eof_manager
+    - ID=eof_manager_1
     image: eof_manager:latest
     links:
     - rabbitmq
     networks:
     - testing_net
 
-  status_controller:
-    container_name: status_controller
+  status_controller_1:
+    container_name: status_controller_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=status_controller
+    - ID=status_controller_1
     image: status_controller:latest
     links:
     - rabbitmq
@@ -70,14 +70,14 @@ services:
     volumes:
     - ./status_controller/config.ini:/config.ini
 
-  groupby_query_1:
-    container_name: groupby_query_1
+  groupby_query_1_1:
+    container_name: groupby_query_1_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=groupby_query_1
+    - ID=groupby_query_1_1
     image: groupby:latest
     links:
     - rabbitmq
@@ -86,14 +86,14 @@ services:
     volumes:
     - ./groupby/config/config_groupby_1.ini:/config.ini
 
-  groupby_query_2:
-    container_name: groupby_query_2
+  groupby_query_2_1:
+    container_name: groupby_query_2_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=groupby_query_2
+    - ID=groupby_query_2_1
     image: groupby:latest
     links:
     - rabbitmq
@@ -102,14 +102,14 @@ services:
     volumes:
     - ./groupby/config/config_groupby_2.ini:/config.ini
 
-  groupby_query_3:
-    container_name: groupby_query_3
+  groupby_query_3_1:
+    container_name: groupby_query_3_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=groupby_query_3
+    - ID=groupby_query_3_1
     image: groupby:latest
     links:
     - rabbitmq
@@ -128,7 +128,7 @@ services:
       - NODE_ID=1
       - NODES_ID=[2, 3]
       - PORT=5001
-      - NODES=['accepter', 'eof_manager', 'status_controller', 'groupby_query_1', 'groupby_query_2', 'groupby_query_3', 'trip_parser_1', 'station_parser_1', 'weather_parser_1', 'prectot_filter_1', 'date_modifier_1', 'filter_trips_query1_1', 'joiner_query_1_1', 'filter_trips_year_1', 'filter_stations_query2_1', 'joiner_query_2_1', 'filter_trips_query3_1', 'filter_stations_query3_1', 'joiner_query_3_1', 'distance_calculator_1']
+      - NODES=['accepter_1', 'eof_manager_1', 'status_controller_1', 'groupby_query_1_1', 'groupby_query_2_1', 'groupby_query_3_1', 'trip_parser_1', 'trip_parser_2', 'trip_parser_3', 'station_parser_1', 'station_parser_2', 'station_parser_3', 'weather_parser_1', 'weather_parser_2', 'weather_parser_3', 'prectot_filter_1', 'prectot_filter_2', 'date_modifier_1', 'date_modifier_2', 'filter_trips_query1_1', 'filter_trips_query1_2', 'joiner_query_1_1', 'joiner_query_1_2', 'filter_trips_year_1', 'filter_trips_year_2', 'filter_stations_query2_1', 'filter_stations_query2_2', 'joiner_query_2_1', 'joiner_query_2_2', 'filter_trips_query3_1', 'filter_trips_query3_2', 'filter_stations_query3_1', 'filter_stations_query3_2', 'joiner_query_3_1', 'joiner_query_3_2', 'distance_calculator_1', 'distance_calculator_2']
     image: monitor:latest
     restart: on-failure
     networks:
@@ -147,7 +147,7 @@ services:
       - NODE_ID=2
       - NODES_ID=[1, 3]
       - PORT=5002
-      - NODES=['accepter', 'eof_manager', 'status_controller', 'groupby_query_1', 'groupby_query_2', 'groupby_query_3', 'trip_parser_1', 'station_parser_1', 'weather_parser_1', 'prectot_filter_1', 'date_modifier_1', 'filter_trips_query1_1', 'joiner_query_1_1', 'filter_trips_year_1', 'filter_stations_query2_1', 'joiner_query_2_1', 'filter_trips_query3_1', 'filter_stations_query3_1', 'joiner_query_3_1', 'distance_calculator_1']
+      - NODES=['accepter_1', 'eof_manager_1', 'status_controller_1', 'groupby_query_1_1', 'groupby_query_2_1', 'groupby_query_3_1', 'trip_parser_1', 'trip_parser_2', 'trip_parser_3', 'station_parser_1', 'station_parser_2', 'station_parser_3', 'weather_parser_1', 'weather_parser_2', 'weather_parser_3', 'prectot_filter_1', 'prectot_filter_2', 'date_modifier_1', 'date_modifier_2', 'filter_trips_query1_1', 'filter_trips_query1_2', 'joiner_query_1_1', 'joiner_query_1_2', 'filter_trips_year_1', 'filter_trips_year_2', 'filter_stations_query2_1', 'filter_stations_query2_2', 'joiner_query_2_1', 'joiner_query_2_2', 'filter_trips_query3_1', 'filter_trips_query3_2', 'filter_stations_query3_1', 'filter_stations_query3_2', 'joiner_query_3_1', 'joiner_query_3_2', 'distance_calculator_1', 'distance_calculator_2']
     image: monitor:latest
     restart: on-failure
     networks:
@@ -166,7 +166,7 @@ services:
       - NODE_ID=3
       - NODES_ID=[1, 2]
       - PORT=5003
-      - NODES=['accepter', 'eof_manager', 'status_controller', 'groupby_query_1', 'groupby_query_2', 'groupby_query_3', 'trip_parser_1', 'station_parser_1', 'weather_parser_1', 'prectot_filter_1', 'date_modifier_1', 'filter_trips_query1_1', 'joiner_query_1_1', 'filter_trips_year_1', 'filter_stations_query2_1', 'joiner_query_2_1', 'filter_trips_query3_1', 'filter_stations_query3_1', 'joiner_query_3_1', 'distance_calculator_1']
+      - NODES=['accepter_1', 'eof_manager_1', 'status_controller_1', 'groupby_query_1_1', 'groupby_query_2_1', 'groupby_query_3_1', 'trip_parser_1', 'trip_parser_2', 'trip_parser_3', 'station_parser_1', 'station_parser_2', 'station_parser_3', 'weather_parser_1', 'weather_parser_2', 'weather_parser_3', 'prectot_filter_1', 'prectot_filter_2', 'date_modifier_1', 'date_modifier_2', 'filter_trips_query1_1', 'filter_trips_query1_2', 'joiner_query_1_1', 'joiner_query_1_2', 'filter_trips_year_1', 'filter_trips_year_2', 'filter_stations_query2_1', 'filter_stations_query2_2', 'joiner_query_2_1', 'joiner_query_2_2', 'filter_trips_query3_1', 'filter_trips_query3_2', 'filter_stations_query3_1', 'filter_stations_query3_2', 'joiner_query_3_1', 'joiner_query_3_2', 'distance_calculator_1', 'distance_calculator_2']
     image: monitor:latest
     restart: on-failure
     networks:
@@ -191,6 +191,38 @@ services:
     volumes:
     - ./parser/config/config_trip_parser.ini:/config.ini
 
+  trip_parser_2:
+    container_name: trip_parser_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=trip_parser_2
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./parser/config/config_trip_parser.ini:/config.ini
+
+  trip_parser_3:
+    container_name: trip_parser_3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=trip_parser_3
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./parser/config/config_trip_parser.ini:/config.ini
+
   station_parser_1:
     container_name: station_parser_1
     depends_on:
@@ -199,6 +231,38 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - ID=station_parser_1
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./parser/config/config_station_parser.ini:/config.ini
+
+  station_parser_2:
+    container_name: station_parser_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=station_parser_2
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./parser/config/config_station_parser.ini:/config.ini
+
+  station_parser_3:
+    container_name: station_parser_3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=station_parser_3
     image: parser:latest
     links:
     - rabbitmq
@@ -223,6 +287,38 @@ services:
     volumes:
     - ./parser/config/config_weather_parser.ini:/config.ini
 
+  weather_parser_2:
+    container_name: weather_parser_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=weather_parser_2
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./parser/config/config_weather_parser.ini:/config.ini
+
+  weather_parser_3:
+    container_name: weather_parser_3
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=weather_parser_3
+    image: parser:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./parser/config/config_weather_parser.ini:/config.ini
+
   prectot_filter_1:
     container_name: prectot_filter_1
     depends_on:
@@ -239,6 +335,22 @@ services:
     volumes:
     - ./filter/config/config_filter_weather_1.ini:/config.ini
 
+  prectot_filter_2:
+    container_name: prectot_filter_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=prectot_filter_2
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./filter/config/config_filter_weather_1.ini:/config.ini
+
   date_modifier_1:
     container_name: date_modifier_1
     depends_on:
@@ -247,6 +359,22 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - ID=date_modifier_1
+    image: date_modifier:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./date_modifier/config.ini:/config.ini
+
+  date_modifier_2:
+    container_name: date_modifier_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=date_modifier_2
     image: date_modifier:latest
     links:
     - rabbitmq
@@ -272,6 +400,23 @@ services:
     - ./filter/config/config_filter_trips_1.ini:/config.ini
 
 
+  filter_trips_query1_2:
+    container_name: filter_trips_query1_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=filter_trips_query1_2
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./filter/config/config_filter_trips_1.ini:/config.ini
+
+
   joiner_query_1_1:
     container_name: joiner_query_1_1
     depends_on:
@@ -280,6 +425,22 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - ID=joiner_query_1_1
+    image: joiner:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./joiner/config/config_joiner_1.ini:/config.ini
+
+  joiner_query_1_2:
+    container_name: joiner_query_1_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=joiner_query_1_2
     image: joiner:latest
     links:
     - rabbitmq
@@ -304,6 +465,22 @@ services:
     volumes:
     - ./filter/config/config_filter_trips_2.ini:/config.ini
 
+  filter_trips_year_2:
+    container_name: filter_trips_year_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=filter_trips_year_2
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./filter/config/config_filter_trips_2.ini:/config.ini
+
   filter_stations_query2_1:
     container_name: filter_stations_query2_1
     depends_on:
@@ -312,6 +489,22 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - ID=filter_stations_query2_1
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./filter/config/config_filter_station_2.ini:/config.ini
+
+  filter_stations_query2_2:
+    container_name: filter_stations_query2_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=filter_stations_query2_2
     image: filter:latest
     links:
     - rabbitmq
@@ -336,6 +529,22 @@ services:
     volumes:
     - ./joiner/config/config_joiner_2.ini:/config.ini
 
+  joiner_query_2_2:
+    container_name: joiner_query_2_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=joiner_query_2_2
+    image: joiner:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./joiner/config/config_joiner_2.ini:/config.ini
+
   filter_trips_query3_1:
     container_name: filter_trips_query3_1
     depends_on:
@@ -344,6 +553,23 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - ID=filter_trips_query3_1
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./filter/config/config_filter_trips_3.ini:/config.ini
+
+
+  filter_trips_query3_2:
+    container_name: filter_trips_query3_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=filter_trips_query3_2
     image: filter:latest
     links:
     - rabbitmq
@@ -370,6 +596,23 @@ services:
     - ./filter/config/config_filter_station_3.ini:/config.ini
 
 
+  filter_stations_query3_2:
+    container_name: filter_stations_query3_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=filter_stations_query3_2
+    image: filter:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./filter/config/config_filter_station_3.ini:/config.ini
+
+
   joiner_query_3_1:
     container_name: joiner_query_3_1
     depends_on:
@@ -386,6 +629,22 @@ services:
     volumes:
     - ./joiner/config/config_joiner_3.ini:/config.ini
 
+  joiner_query_3_2:
+    container_name: joiner_query_3_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=joiner_query_3_2
+    image: joiner:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./joiner/config/config_joiner_3.ini:/config.ini
+
   distance_calculator_1:
     container_name: distance_calculator_1
     depends_on:
@@ -394,6 +653,22 @@ services:
     environment:
     - PYTHONUNBUFFERED=1
     - ID=distance_calculator_1
+    image: distance_calculator:latest
+    links:
+    - rabbitmq
+    networks:
+    - testing_net
+    volumes:
+    - ./distance_calculator/config.ini:/config.ini
+
+  distance_calculator_2:
+    container_name: distance_calculator_2
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+    - PYTHONUNBUFFERED=1
+    - ID=distance_calculator_2
     image: distance_calculator:latest
     links:
     - rabbitmq

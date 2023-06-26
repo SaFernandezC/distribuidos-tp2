@@ -45,13 +45,13 @@ def main():
 
     # Log config parameters at the beginning of the program to verify the configuration
     # of the component
-    logging.debug(f"action: config | result: success | logging_level: {logging_level}")
-
+    logging.info(f"action: config | result: success | logging_level: {logging_level}")
+    
     try:
         groupby = Groupby(input_queue_name, output_queue_name, query, primary_key, agg, field_to_agregate, send_data_function, node_id)
         groupby.run()
     except OSError as e:
-        logging.error(f'action: initialize_distance_calculator | result: fail | error: {e}')
+        logging.error(f'action: initialize_groupby | result: fail | error: {e}')
 
 def initialize_log(logging_level):
     """

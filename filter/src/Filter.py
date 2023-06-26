@@ -23,7 +23,7 @@ class Filter:
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
         self.connection = Connection()
-        self.eof_manager = self.connection.EofProducer(output_exchange, output_queue_name, input_queue_name)
+        self.eof_manager = self.connection.EofProducer(output_exchange, output_queue_name, node_id)
 
         self.input_queue = self.connection.Subscriber(exchange_name=input_exchange, exchange_type=input_exchange_type, queue_name=input_queue_name)
 
@@ -31,6 +31,7 @@ class Filter:
             self.output_queue = self.connection.Publisher(output_exchange, output_exchange_type)
         else: self.output_queue = self.connection.Producer(queue_name=output_queue_name)
         self.hearbeater = HeartBeater(self.connection, node_id)
+        self.node_id = node_id
 
 
     def _handle_sigterm(self, *args):
@@ -94,15 +95,29 @@ class Filter:
         self.input_queue.receive(self._callback)
         self.connection.start_consuming()
         self.connection.close()
+    
+    def handle_eof(self, body, batch):
+        client_id = batch["client_id"]
+        if "eof" in batch:
+            msg_type = "eof"
+        elif "clean" in batch:
+            msg_type = "clean"
+        else:
+            return False
+
+        if batch["dst"] == self.node_id:
+            self.eof_manager.send_eof(client_id, msg_type=msg_type)
+        else:
+            self.input_queue.resend_bind_queue(body)
+        
+        return True
 
     def _callback(self, body, ack_tag):
         batch = json.loads(body.decode())
         client_id = batch["client_id"]
-        if "eof" in batch:
-            # self.connection.stop_consuming()
-            self.eof_manager.send_eof(client_id)
-            print(f"Recibo eof de cliente: {client_id}-> Envio EOF")
-        else:
+        eof = self.handle_eof(body, batch)
+
+        if not eof:
             data = []
             for item in batch["data"]:
                 filtered = True
@@ -115,6 +130,9 @@ class Filter:
                     
                 if filtered:
                     data.append(self.select(item))
-            self.output_queue.send(json.dumps({"client_id":client_id, "data":data}))
+            if len(data) > 0:
+                self.output_queue.send(json.dumps({"client_id":client_id, "data":data}))
+        else:
+            print("Ahora Ackeo!")
         
         self.input_queue.ack(ack_tag)

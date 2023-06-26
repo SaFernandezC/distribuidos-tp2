@@ -9,14 +9,14 @@ class Client:
     def __init__(self, server_ip, server_port, lines_per_batch):
         try:
             self.client_socket = Socket()
-            self.client_socket.connect(server_ip, server_port)
             self.protocol = Protocol()
             self.lines_per_batch = lines_per_batch
-
+            self.client_socket.connect(server_ip, server_port)
             signal.signal(signal.SIGTERM, self._handle_sigterm)
         except Exception as e:
             self.stop()
             logging.error("action: create client | result: fail | error: {}".format(e))
+            raise Exception("Server Not Available")
 
 
     def send_finish(self):

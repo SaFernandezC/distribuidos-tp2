@@ -4,21 +4,21 @@ import logging
 INT_LENGTH = 4
 
 class EofQueue():
-    def __init__(self, channel, output_exchange, output_queue, input_queue):
+    def __init__(self, channel, output_exchange, output_queue, container_id):
         try:
             self.channel = channel
             self.output_exchange = output_exchange
             self.output_queue = output_queue
-            self.input_queue = input_queue
+            self.container_id = container_id
             self.user_callback = None
 
             self.queue = channel.queue_declare(queue='eof_manager', durable=True)
             self.queue_name = self.queue.method.queue
 
             if not output_exchange:
-                self.eof_msg = {"type":"work_queue", "queue": output_queue}
+                self.eof_msg = {"type":"work_queue", "queue": output_queue, "container_id": container_id}
             else:
-                self.eof_msg = {"type":"exchange", "exchange": output_exchange}
+                self.eof_msg = {"type":"exchange", "exchange": output_exchange, "container_id": container_id}
         except Exception as e:
             logging.error(f"Eof Queue: Error creating queue {e}")
 
@@ -37,14 +37,20 @@ class EofQueue():
         except Exception as e:
             logging.error(f"Eof Queue: Error on callback {e}")
 
-    def send_eof(self, client_id, msg=None):
+    def send_eof(self, client_id, msg:dict=None, msg_type="eof"):
         try:
             if not msg:
                 msg = self.eof_msg
+            msg_copy = msg.copy()
+
+            msg_copy[msg_type] = True
+
+            if "container_id" not in msg_copy:
+                msg_copy["container_id"] = self.container_id
             
-            msg["client_id"] = client_id
+            msg_copy["client_id"] = client_id
             self.channel.basic_publish(exchange='',
                         routing_key=self.queue_name,
-                        body=json.dumps(msg))
+                        body=json.dumps(msg_copy))
         except Exception as e:
             logging.error(f"Eof Queue: Error sending eof {e}")

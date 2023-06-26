@@ -1,5 +1,6 @@
 import os
 import time
+import json
 
 def split_file(filename):
     file_dir = os.path.dirname(filename)
@@ -55,12 +56,11 @@ def get_current_file(filename):
 
     return max_file
 
-
-# if __name__ == "__main__":
-#     try:
-#         atomic_write("test.txt", "Hola!")
-#         print(get_current_file("test.txt"))
-#     except Exception as err:
-#         print("Error")
-#         print(err)
-#     exit = input("Exit")
+def load_memory(filename, encoding="utf-8"):
+    file = get_current_file(filename)
+    print(f"FILE: {file}")
+    if not file:
+        return {}
+    
+    with open(file, "r", encoding=encoding) as f:
+        return json.load(f)

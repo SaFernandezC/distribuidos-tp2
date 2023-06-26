@@ -4,7 +4,7 @@ import json
 
 ID_IDENTIFICATOR = "NODE_ID_HERE"
 BASE_FOLDER = "compose_creater/"
-BASE_NODES = ["accepter", "eof_manager", "status_controller", "groupby_query_1", "groupby_query_2", "groupby_query_3"]
+BASE_NODES = ["accepter_1", "eof_manager_1", "status_controller_1", "groupby_query_1_1", "groupby_query_2_1", "groupby_query_3_1"]
 OTHER_NODES_IDEFNTIFICATOR = "NODES_HERE"
 OTHER_MONITORS_IDEFNTIFICATOR = "MONITORS_HERE"
 DOCKER_FILE = "docker-compose-dev.yaml"
@@ -12,25 +12,25 @@ DOCKER_FILE = "docker-compose-dev.yaml"
 
 def set_up_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ft_1',  '--filter_trips_1', type=int, help='defines number of trips filters for query1', default=1)
-    parser.add_argument('-ft_2', '--filter_trips_2', type=int, help='defines number of trips filters for query2', default=1)
-    parser.add_argument('-ft_3', '--filter_trips_3', type=int, help='defines number of trips filters for query3', default=1)
+    parser.add_argument('-ft_1',  '--filter_trips_1', type=int, help='defines number of trips filters for query1', default=2)
+    parser.add_argument('-ft_2', '--filter_trips_2', type=int, help='defines number of trips filters for query2', default=2)
+    parser.add_argument('-ft_3', '--filter_trips_3', type=int, help='defines number of trips filters for query3', default=2)
 
-    parser.add_argument('-fw_1', '--filter_weather_1', type=int, help='defines number of weather filters for query1', default=1)
+    parser.add_argument('-fw_1', '--filter_weather_1', type=int, help='defines number of weather filters for query1', default=2)
 
-    parser.add_argument('-fs_2', '--filter_station_2', type=int, help='defines number of station filters for query2', default=1)
-    parser.add_argument('-fs_3', '--filter_station_3', type=int, help='defines number of station filters for query3', default=1)
+    parser.add_argument('-fs_2', '--filter_station_2', type=int, help='defines number of station filters for query2', default=2)
+    parser.add_argument('-fs_3', '--filter_station_3', type=int, help='defines number of station filters for query3', default=2)
 
-    parser.add_argument('-j_1', '--joiner_1', type=int, help='defines number of joiners for query1', default=1)
-    parser.add_argument('-j_2', '--joiner_2', type=int, help='defines number of joiners for query2', default=1)
-    parser.add_argument('-j_3', '--joiner_3', type=int, help='defines number of joiners for query3', default=1)
+    parser.add_argument('-j_1', '--joiner_1', type=int, help='defines number of joiners for query1', default=2)
+    parser.add_argument('-j_2', '--joiner_2', type=int, help='defines number of joiners for query2', default=2)
+    parser.add_argument('-j_3', '--joiner_3', type=int, help='defines number of joiners for query3', default=2)
 
-    parser.add_argument('-dm', '--date_modifier', type=int, help='defines number of date modificator nodes for query1', default=1)
-    parser.add_argument('-dc', '--dist_calculator', type=int, help='defines number of distance calculator nodes for query3', default=1)
+    parser.add_argument('-dm', '--date_modifier', type=int, help='defines number of date modificator nodes for query1', default=2)
+    parser.add_argument('-dc', '--dist_calculator', type=int, help='defines number of distance calculator nodes for query3', default=2)
 
-    parser.add_argument('-tp', '--trip_parser', type=int, help='defines number of trip parser nodes', default=1)
-    parser.add_argument('-wp', '--weather_parser', type=int, help='defines number of weather parser nodes', default=1)
-    parser.add_argument('-sp', '--station_parser', type=int, help='defines number of station parser nodes', default=1)
+    parser.add_argument('-tp', '--trip_parser', type=int, help='defines number of trip parser nodes', default=3)
+    parser.add_argument('-wp', '--weather_parser', type=int, help='defines number of weather parser nodes', default=3)
+    parser.add_argument('-sp', '--station_parser', type=int, help='defines number of station parser nodes', default=3)
 
     parser.add_argument('-mon',  '--monitors', type=int, help='defines number of monitors', default=3)
 
@@ -190,20 +190,23 @@ def create_queues_file(args):
         data["date_modifier"]["writing"] = args.filter_weather_1
         data["date_modifier"]["listening"] = args.date_modifier
 
-        data["joiner_1"]["writing"] = args.filter_trips_1
-        data["joiner_1"]["listening"] = args.joiner_1
+        data["joiner_query_1"]["writing"] = args.filter_trips_1
+        data["joiner_query_1"]["listening"] = args.joiner_1
+        data["joiner_query_1"]["clean_received"] = args.filter_trips_1
 
         data["groupby_query_1"]["writing"] = args.joiner_1
         data["groupby_query_1"]["listening"] = 1
 
-        data["joiner_2"]["writing"] = args.filter_trips_2
-        data["joiner_2"]["listening"] = args.joiner_2
+        data["joiner_query_2"]["writing"] = args.filter_trips_2
+        data["joiner_query_2"]["listening"] = args.joiner_2
+        data["joiner_query_2"]["clean_received"] = args.filter_trips_2
 
         data["groupby_query_2"]["writing"] = args.joiner_2
         data["groupby_query_2"]["listening"] = 1
 
-        data["joiner_3"]["writing"] = args.filter_trips_3
-        data["joiner_3"]["listening"] = args.joiner_3
+        data["joiner_query_3"]["writing"] = args.filter_trips_3
+        data["joiner_query_3"]["listening"] = args.joiner_3
+        data["joiner_query_3"]["clean_received"] = args.filter_trips_3
 
         data["distance_calculator"]["writing"] = args.joiner_3
         data["distance_calculator"]["listening"] = args.dist_calculator
@@ -211,14 +214,14 @@ def create_queues_file(args):
         data["groupby_query_3"]["writing"] = args.dist_calculator
         data["groupby_query_3"]["listening"] = 1
 
-        data["trip"]["writing"] = 1
-        data["trip"]["listening"] = args.trip_parser
+        data["trip_parser"]["writing"] = 1
+        data["trip_parser"]["listening"] = args.trip_parser
 
-        data["weather"]["writing"] = 1
-        data["weather"]["listening"] = args.weather_parser
+        data["weather_parser"]["writing"] = 1
+        data["weather_parser"]["listening"] = args.weather_parser
 
-        data["station"]["writing"] = 1
-        data["station"]["listening"] = args.station_parser
+        data["station_parser"]["writing"] = 1
+        data["station_parser"]["listening"] = args.station_parser
 
         queues.close()
         with open("./eof_manager/queues.json", "w") as outfile:

@@ -26,42 +26,42 @@ services:
     ports:
     - 15672:15672
 
-  accepter:
-    container_name: accepter
+  accepter_1:
+    container_name: accepter_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=accepter
+    - ID=accepter_1
     image: accepter:latest
     links:
     - rabbitmq
     networks:
     - testing_net
     
-  eof_manager:
-    container_name: eof_manager
+  eof_manager_1:
+    container_name: eof_manager_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=eof_manager
+    - ID=eof_manager_1
     image: eof_manager:latest
     links:
     - rabbitmq
     networks:
     - testing_net
 
-  status_controller:
-    container_name: status_controller
+  status_controller_1:
+    container_name: status_controller_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=status_controller
+    - ID=status_controller_1
     image: status_controller:latest
     links:
     - rabbitmq
@@ -70,14 +70,14 @@ services:
     volumes:
     - ./status_controller/config.ini:/config.ini
 
-  groupby_query_1:
-    container_name: groupby_query_1
+  groupby_query_1_1:
+    container_name: groupby_query_1_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=groupby_query_1
+    - ID=groupby_query_1_1
     image: groupby:latest
     links:
     - rabbitmq
@@ -86,14 +86,14 @@ services:
     volumes:
     - ./groupby/config/config_groupby_1.ini:/config.ini
 
-  groupby_query_2:
-    container_name: groupby_query_2
+  groupby_query_2_1:
+    container_name: groupby_query_2_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=groupby_query_2
+    - ID=groupby_query_2_1
     image: groupby:latest
     links:
     - rabbitmq
@@ -102,14 +102,14 @@ services:
     volumes:
     - ./groupby/config/config_groupby_2.ini:/config.ini
 
-  groupby_query_3:
-    container_name: groupby_query_3
+  groupby_query_3_1:
+    container_name: groupby_query_3_1
     depends_on:
       rabbitmq:
         condition: service_healthy
     environment:
     - PYTHONUNBUFFERED=1
-    - ID=groupby_query_3
+    - ID=groupby_query_3_1
     image: groupby:latest
     links:
     - rabbitmq

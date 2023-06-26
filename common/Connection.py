@@ -23,8 +23,8 @@ class Connection:
     def Subscriber(self, exchange_name, exchange_type, queue_name, routing_keys=None):
         return ExchangeQueue("sub", self.channel, exchange_name, exchange_type, queue_name, routing_keys)
 
-    def EofProducer(self, output_exchange, output_queue, input_queue):
-        return EofQueue(self.channel, output_exchange, output_queue, input_queue)
+    def EofProducer(self, output_exchange, output_queue, container_id):
+        return EofQueue(self.channel, output_exchange, output_queue, container_id)
 
     # def EofConsumer(self, output_exchange, output_queue, input_queue):
     #     return EofQueue(self.channel, output_exchange, output_queue, input_queue)

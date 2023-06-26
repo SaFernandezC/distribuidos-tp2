@@ -1,11 +1,15 @@
 from common.Connection import Connection
-import ujson as json
+# import ujson as json
+import json
 from .utils import default, find_dup_trips_year, find_stations_query_3
 import signal
 import logging
-from common.AtomicWrite import atomic_write, get_current_file
+from common.AtomicWrite import atomic_write, load_memory
+import random
+from hashlib import sha256
 from common.HeartBeater import HeartBeater
 
+MESSAGES_BATCH = 10
 
 class Groupby:
 
@@ -29,6 +33,15 @@ class Groupby:
         self.tags_to_ack = [] # [messages]
         self.ids_processed = {}  # {Client_id: [ids]}
         self.hearbeater = HeartBeater(self.connection, node_id)
+
+        self.msg_counter = 0
+        self.get_previous_state()
+
+
+    def get_previous_state(self):
+        previous_state = load_memory("./data.txt")
+        self.group_table = previous_state.get('group_table', {})
+        self.ids_processed = previous_state.get('ids_processed', {})
 
 
     def _handle_sigterm(self, *args):
@@ -80,6 +93,7 @@ class Groupby:
 
     def _group(self, client_id, batch):
         if client_id not in self.group_table:
+            print(f"Agrego Cliente {client_id}")
             self.group_table[client_id] = {}
 
         for item in batch:
@@ -88,59 +102,64 @@ class Groupby:
 
 
     def add_message_id(self, message_id, client_id):
-        if not self.ids_proccesed[client_id]:
+        if not client_id in self.ids_processed:
             self.ids_processed[client_id] = []
 
-        already_added = message_id in self.ids_proccesed[client_id]
+        already_added = message_id in self.ids_processed[client_id]
 
         if not already_added:
-            self.ids_proccesed[client_id].append(message_id)
+            self.ids_processed[client_id].append(message_id)
 
         return already_added
 
-    #def ack(self, forced):
-        #if len(self.tags_to_ack) > MESSAGES_BATCH or forced:
-            # Bajo A Disco group table/ids
-            # {
-            #     "group_table": self.group_table,
-            #     "ids_processed": self.ids_processed,
-            # }
-            # send_ack
-            # self.tags_to_ack = []
+    def ack(self, forced):
+        if len(self.tags_to_ack) >= MESSAGES_BATCH or forced:
+            data = {
+                "group_table": self.group_table,
+                "ids_processed": self.ids_processed
+            }
+            atomic_write("./data.txt", json.dumps(data))
+            #self.caer("A")
+            self.input_queue.ack(self.tags_to_ack)
+            self.tags_to_ack = []
 
+    def caer(self, location):
+        num = random.random()
+        if num <= 0.05:
+            print(f"ME CAIGO EN {location}")
+            resultado = 1/0
 
     def _callback(self, body, ack_tag):
-        batch = json.loads(body.decode())
-        client_id = batch["client_id"]
+        message_id = int(sha256(body).hexdigest(), 16)
 
-        # message_id = hash(batch)
-        # self.tags_to_ack.append(ack_tag)
-        # duplicated = self.add_message_id(self, message_id, client_id)
-        # if duplicated:
-        #     self.input_queue.ack(ack_tag)
-        #     return
+        batch = json.loads(body.decode())
+        client_id = str(batch["client_id"])
+
+        self.tags_to_ack.append(ack_tag)
+        duplicated = self.add_message_id(message_id, client_id)
+        if duplicated:
+            self.input_queue.ack(ack_tag)
+            return
 
         if "eof" in batch:
-            function = eval(self.send_data_function)
-            filtered = function(self.group_table[client_id])
+            print(f"Recibi EOF De {client_id}")
+            if client_id in self.group_table:
+                function = eval(self.send_data_function)
+                filtered = function(self.group_table[client_id])
+            else:
+                filtered = None
             self.output_queue.send(json.dumps({"client_id": client_id, "query": self.query, "results": filtered}))
+        elif "clean" in batch:
+            self.group_table.pop(client_id, None)
+            self.ids_processed.pop(client_id, None)
         else:
             self._group(client_id, batch["data"])
 
-        # if "clean" in batch or "eof" in batch:
-        #     self.ids_processed.pop(client_id, None)
-        #     self.group_table.pop(client_id, None)
-
-        # Bajo A Disco group table/ids
-        # data = {
-        #     "group_table": self.group_table,
-        #     "ids_processed": self.ids_processed,
-        # }
-        # atomic_write(json.dumps({data}))
-        self.input_queue.ack(ack_tag)
+        force_ack = "clean" in batch or "eof" in batch
+        self.ack(force_ack)
 
     def run(self):
         self.hearbeater.start()
-        self.input_queue.receive(self._callback)
+        self.input_queue.receive(self._callback, prefetch_count=MESSAGES_BATCH)
         self.connection.start_consuming()
         self.connection.close()

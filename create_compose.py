@@ -12,25 +12,25 @@ DOCKER_FILE = "docker-compose-dev.yaml"
 
 def set_up_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ft_1',  '--filter_trips_1', type=int, help='defines number of trips filters for query1', default=2)
-    parser.add_argument('-ft_2', '--filter_trips_2', type=int, help='defines number of trips filters for query2', default=2)
-    parser.add_argument('-ft_3', '--filter_trips_3', type=int, help='defines number of trips filters for query3', default=2)
+    parser.add_argument('-ft_1',  '--filter_trips_1', type=int, help='defines number of trips filters for query1', default=1)
+    parser.add_argument('-ft_2', '--filter_trips_2', type=int, help='defines number of trips filters for query2', default=1)
+    parser.add_argument('-ft_3', '--filter_trips_3', type=int, help='defines number of trips filters for query3', default=1)
 
-    parser.add_argument('-fw_1', '--filter_weather_1', type=int, help='defines number of weather filters for query1', default=2)
+    parser.add_argument('-fw_1', '--filter_weather_1', type=int, help='defines number of weather filters for query1', default=1)
 
-    parser.add_argument('-fs_2', '--filter_station_2', type=int, help='defines number of station filters for query2', default=2)
-    parser.add_argument('-fs_3', '--filter_station_3', type=int, help='defines number of station filters for query3', default=2)
+    parser.add_argument('-fs_2', '--filter_station_2', type=int, help='defines number of station filters for query2', default=1)
+    parser.add_argument('-fs_3', '--filter_station_3', type=int, help='defines number of station filters for query3', default=1)
 
-    parser.add_argument('-j_1', '--joiner_1', type=int, help='defines number of joiners for query1', default=2)
-    parser.add_argument('-j_2', '--joiner_2', type=int, help='defines number of joiners for query2', default=2)
-    parser.add_argument('-j_3', '--joiner_3', type=int, help='defines number of joiners for query3', default=2)
+    parser.add_argument('-j_1', '--joiner_1', type=int, help='defines number of joiners for query1', default=1)
+    parser.add_argument('-j_2', '--joiner_2', type=int, help='defines number of joiners for query2', default=1)
+    parser.add_argument('-j_3', '--joiner_3', type=int, help='defines number of joiners for query3', default=1)
 
-    parser.add_argument('-dm', '--date_modifier', type=int, help='defines number of date modificator nodes for query1', default=2)
-    parser.add_argument('-dc', '--dist_calculator', type=int, help='defines number of distance calculator nodes for query3', default=2)
+    parser.add_argument('-dm', '--date_modifier', type=int, help='defines number of date modificator nodes for query1', default=1)
+    parser.add_argument('-dc', '--dist_calculator', type=int, help='defines number of distance calculator nodes for query3', default=1)
 
-    parser.add_argument('-tp', '--trip_parser', type=int, help='defines number of trip parser nodes', default=3)
-    parser.add_argument('-wp', '--weather_parser', type=int, help='defines number of weather parser nodes', default=3)
-    parser.add_argument('-sp', '--station_parser', type=int, help='defines number of station parser nodes', default=3)
+    parser.add_argument('-tp', '--trip_parser', type=int, help='defines number of trip parser nodes', default=1)
+    parser.add_argument('-wp', '--weather_parser', type=int, help='defines number of weather parser nodes', default=1)
+    parser.add_argument('-sp', '--station_parser', type=int, help='defines number of station parser nodes', default=1)
 
     parser.add_argument('-mon',  '--monitors', type=int, help='defines number of monitors', default=3)
 
@@ -121,6 +121,7 @@ def create_compose(args):
 
     copy_module(file_name, BASE_FOLDER+"base.txt", 0)
     nodes = create_nodes_list(args)
+    print(nodes)
 
     for i in range(args.monitors):
         add_monitors(file_name, BASE_FOLDER+"monitor.txt", i+1, args.monitors, nodes)

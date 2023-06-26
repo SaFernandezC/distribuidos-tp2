@@ -1,67 +1,67 @@
 {
     "date_modifier": {
-        "writing": 2,
-        "listening": 2,
+        "writing": 1,
+        "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "joiner_query_1": {
-        "writing": 2,
-        "listening": 2,
+        "writing": 1,
+        "listening": 1,
         "eof_received": 0,
-        "clean_received": 2
+        "clean_received": 1
     },
     "groupby_query_1": {
-        "writing": 2,
+        "writing": 1,
         "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "joiner_query_2": {
-        "writing": 2,
-        "listening": 2,
+        "writing": 1,
+        "listening": 1,
         "eof_received": 0,
-        "clean_received": 2
+        "clean_received": 1
     },
     "groupby_query_2": {
-        "writing": 2,
+        "writing": 1,
         "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "joiner_query_3": {
-        "writing": 2,
-        "listening": 2,
+        "writing": 1,
+        "listening": 1,
         "eof_received": 0,
-        "clean_received": 2
+        "clean_received": 1
     },
     "distance_calculator": {
-        "writing": 2,
-        "listening": 2,
+        "writing": 1,
+        "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "groupby_query_3": {
-        "writing": 2,
+        "writing": 1,
         "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "trip_parser": {
         "writing": 1,
-        "listening": 3,
+        "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "weather_parser": {
         "writing": 1,
-        "listening": 3,
+        "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "station_parser": {
         "writing": 1,
-        "listening": 3,
+        "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     }

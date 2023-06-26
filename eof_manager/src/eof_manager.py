@@ -98,17 +98,14 @@ class EofManager:
                 listening = queue_data["listening"]
                 for i in range(listening):
                     dest_key = f"{queue_name}_{i+1}"
-                    print(f"Mando a [Exchange Queue]: {dest_key}")
                     self.queues_connection[queue_name].send(self.build_eof_msg(client_id, message_type, dest_key))
 
     def _exchange_without_queues(self, client_id, line, message_type):
         exchange = self.exchanges_per_client[client_id][line["exchange"]]
         writing = exchange["writing"]
         exchange[message_type] += 1    
-        print(f"{time.asctime(time.localtime())} Exch sin colas EOF PARCIAL :", exchange[message_type])
         if exchange[message_type] == writing:
             exchange = line["exchange"]
-            print(f"Mando a [Exchange]: {exchange}")
             self.exchange_connections[line["exchange"]].send(self.build_eof_msg(client_id, message_type))
 
     def _queue(self, client_id, line, message_type):
@@ -121,8 +118,6 @@ class EofManager:
         if self.work_queues_per_client[client_id][queue][message_type] == writing:
             for i in range(listening):
                 dest_key = f"{queue}_{i+1}"
-                print(f"Mando a [Queue]: {dest_key}")
-                # print(f"{time.asctime(time.localtime())} ENVIO {message_type} DE {client_id} A: {queue} donde hay {listening} listening")
                 self.queues_connection[queue].send(self.build_eof_msg(client_id, message_type, dest_key))
             
             # if queue.find("groupby") > 0:
@@ -165,12 +160,6 @@ class EofManager:
 
         return already_added
 
-    def caer(self, location):
-        num = random.random()
-        if num <= 0.05:
-            print(f"ME CAIGO EN {location} At {time.time()}")
-            resultado = 1/0
-
     def save_memory(self):
         data = {
             "work_queues_per_client": self.work_queues_per_client,
@@ -190,13 +179,10 @@ class EofManager:
         if client_id not in self.active_clients:
             self.add_new_client(client_id)
         
-        # Agregar el container id al mensaje de EOF para poder filtrar dups
         duplicated = self.add_message_id(message_id, client_id)
         if duplicated:
             self.eof_consumer.ack(ack_tag)
             return
-        
-        # print(f"Recibi {line} de cliente {client_id}")
 
         self.process_eof(line, client_id)
         self.save_memory()

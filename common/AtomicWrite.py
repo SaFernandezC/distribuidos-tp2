@@ -58,7 +58,6 @@ def get_current_file(filename):
 
 def load_memory(filename, encoding="utf-8"):
     file = get_current_file(filename)
-    print(f"FILE: {file}")
     if not file:
         return {}
     

@@ -132,7 +132,5 @@ class Filter:
                     data.append(self.select(item))
             if len(data) > 0:
                 self.output_queue.send(json.dumps({"client_id":client_id, "data":data}))
-        else:
-            print("Ahora Ackeo!")
         
         self.input_queue.ack(ack_tag)

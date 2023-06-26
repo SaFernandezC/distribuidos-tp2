@@ -120,33 +120,33 @@ def check_query_3(query_received):
     return True
 
 
-def check_queries(data):
+def check_queries(data, i):
     logging.info("Data ready")
 
     if not check_query_1(data["query1"]):
         print(data["query1"])
     else:
-        print("QUERY 1 OK")
+        print(f"[{i}], QUERY 1 OK")
 
     if not check_query_2(data["query2"]):
         print(data["query2"])
     else:
-        print("QUERY 2 OK")
+        print(f"[{i}], QUERY 2 OK")
     
     if not check_query_3(data["query3"]):
         print(data["query3"])
     else:
-        print("QUERY 3 OK")
+        print(f"[{i}], QUERY 3 OK")
 
 
-def ask_for_data(client):
+def ask_for_data(client, i):
     ready = False
     while not ready:
         ready, data = client.ask_results()
         logging.info("Waiting for data")
         time.sleep(2)
     
-    check_queries(data)
+    check_queries(data, i)
     # logging.info("Data ready")
     # print("Query1: ", data["query1"])
     # print("*------------------*")
@@ -172,13 +172,13 @@ def main():
     # Initialize server and start server loop
     i = 0
     while True and i != 5:
-        print("Inicio Nuevo Cliente!")
+        print(f"Inicio Nuevo Cliente! [{i}]")
         while True:
             try:
                 time.sleep(id)
                 client = Client(server_ip, server_port, lines_per_batch)
                 send_data(client)
-                ask_for_data(client)
+                ask_for_data(client, i)
                 client.send_finish()
                 break
             except Exception as e:

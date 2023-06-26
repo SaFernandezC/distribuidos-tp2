@@ -14,25 +14,24 @@ INT_LENGTH = 4
 
 class Client:
     def __init__(self, client_sock, protocol, results, shared_lock, current_clients, id_counter):
+        self.client_sock = client_sock
+        self.protocol = protocol
+        self.shared_lock = shared_lock
+        
         with shared_lock:
-            self.client_sock = client_sock
-            self.protocol = protocol
             self.results = results
-            self.shared_lock = shared_lock
             self.current_clients = current_clients
-            
             current = id_counter.get()
             self.id = str(current)
             self.id_counter = id_counter
             id_counter.increment()
-
             self.current_clients.append(self.id)
 
-            self.connection = Connection()
-            self.eof_manager = self.connection.EofProducer(None, None, "Accepter")
-            self.trips_queue = self.connection.Producer(queue_name="trip")
-            self.weathers_queue = self.connection.Producer(queue_name="weather")
-            self.stations_queue = self.connection.Producer(queue_name="station")
+        self.connection = Connection()
+        self.eof_manager = self.connection.EofProducer(None, None, "Accepter")
+        self.trips_queue = self.connection.Producer(queue_name="trip")
+        self.weathers_queue = self.connection.Producer(queue_name="weather")
+        self.stations_queue = self.connection.Producer(queue_name="station")
         self.save_memory()
 
     def recv_data(self, key):
@@ -76,20 +75,23 @@ class Client:
                 self.protocol.send_result(self.client_sock, True, self.results[self.id])
 
     def run(self):
-        while True:
-            action = self.protocol.recv_action(self.client_sock)
-            if action == SEND_DATA:
-                key = self.protocol.recv_key(self.client_sock)
-                self.recv_data(key)
-            elif action == SEND_EOF:
-                key = self.protocol.recv_key(self.client_sock)
-                self.recv_eof(key)
-            elif action == FINISH:
-                self.protocol.send_ack(self.client_sock, True)
-                break
-            elif action == ASK_DATA:
-                self.ask_for_data()
-                
+        try:
+            while True:
+                action = self.protocol.recv_action(self.client_sock)
+                if action == SEND_DATA:
+                    key = self.protocol.recv_key(self.client_sock)
+                    self.recv_data(key)
+                elif action == SEND_EOF:
+                    key = self.protocol.recv_key(self.client_sock)
+                    self.recv_eof(key)
+                elif action == FINISH:
+                    self.protocol.send_ack(self.client_sock, True)
+                    break
+                elif action == ASK_DATA:
+                    self.ask_for_data()
+        except Exception as err:
+            logging.error(f"Cliente {self.id} Has Lost Connection")
+
         with self.shared_lock:
             if self.id in self.current_clients:
                 self.current_clients.remove(self.id)

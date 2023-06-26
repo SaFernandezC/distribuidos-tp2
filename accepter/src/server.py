@@ -1,3 +1,4 @@
+import time
 import logging
 import signal
 from common.Socket import Socket
@@ -20,6 +21,8 @@ SEND_STATIONS = 'S'
 SEND_TRIPS = 'T'
 ASK_DATA = 'A'
 INT_LENGTH = 4
+
+MAX_CLIENTS = 5
 
 class Server:
     def __init__(self, port, listen_backlog, node_id):  # TO DO: Add File
@@ -67,8 +70,8 @@ class Server:
                 thread = threading.Thread(target=client.run)
                 thread.start()
                 self.client_threads.append(thread)
-            elif self.is_alive:
-                self.stop()
+            elif client_sock is None:
+                time.sleep(1)
 
     def __accept_new_connection(self):
         """
@@ -77,6 +80,12 @@ class Server:
         Then connection created is printed and returned
         """
         logging.info('action: accept_connections | result: in_progress')
+        
+        with self.shared_lock:
+            if len(self.current_clients) >= MAX_CLIENTS: #TODO: PONER CONSTANTES
+                print("Reject Client")
+                return None
+        
         c = self._server_socket.accept()
         addr = c.get_addr()
         logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')

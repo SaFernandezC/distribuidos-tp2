@@ -35,12 +35,6 @@ class StatusController:
         logging.info('SIGTERM received - Shutting server down')
         self.connection.close()
 
-    def caer(self, location):
-        num = random.random()
-        if num <= 0.25:
-            print(f"ME CAIGO EN {location} At {time.time()}")
-            resultado = 1/0
-
     def save_memory(self):
         data = {
             "data": self.data,
@@ -71,8 +65,6 @@ class StatusController:
         self.data[client_id][line["query"]] = line["results"]
 
         query = line["query"]
-
-        print(f"Recibi {query} de {client_id}")
 
         if len(self.data[client_id]) == self.qty_of_queries:
             data_to_send = {"client_id": client_id, "data": self.data[client_id]}

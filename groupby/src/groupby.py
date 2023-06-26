@@ -93,7 +93,6 @@ class Groupby:
 
     def _group(self, client_id, batch):
         if client_id not in self.group_table:
-            print(f"Agrego Cliente {client_id}")
             self.group_table[client_id] = {}
 
         for item in batch:
@@ -119,15 +118,8 @@ class Groupby:
                 "ids_processed": self.ids_processed
             }
             atomic_write("./data.txt", json.dumps(data))
-            #self.caer("A")
             self.input_queue.ack(self.tags_to_ack)
             self.tags_to_ack = []
-
-    def caer(self, location):
-        num = random.random()
-        if num <= 0.05:
-            print(f"ME CAIGO EN {location}")
-            resultado = 1/0
 
     def _callback(self, body, ack_tag):
         message_id = int(sha256(body).hexdigest(), 16)
@@ -142,7 +134,6 @@ class Groupby:
             return
 
         if "eof" in batch:
-            print(f"Recibi EOF De {client_id}")
             if client_id in self.group_table:
                 function = eval(self.send_data_function)
                 filtered = function(self.group_table[client_id])

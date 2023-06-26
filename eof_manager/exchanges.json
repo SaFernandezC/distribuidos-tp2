@@ -1,57 +1,57 @@
 {
     "weathers": {
-        "writing": 3,
+        "writing": 1,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {
             "prectot_filter": {
-                "listening": 2
+                "listening": 1
             }
         }
     },
     "trips": {
-        "writing": 3,
+        "writing": 1,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {
             "filter_trips_query1": {
-                "listening": 2
+                "listening": 1
             },
             "filter_trips_year": {
-                "listening": 2
+                "listening": 1
             },
             "filter_trips_query3": {
-                "listening": 2
+                "listening": 1
             }
         }
     },
     "stations": {
-        "writing": 3,
+        "writing": 1,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {
             "filter_stations_query2": {
-                "listening": 2
+                "listening": 1
             },
             "filter_stations_query3": {
-                "listening": 2
+                "listening": 1
             }
         }
     },
     "joiner_query_1": {
-        "writing": 2,
+        "writing": 1,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {}
     },
     "joiner_query_2": {
-        "writing": 2,
+        "writing": 1,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {}
     },
     "joiner_query_3": {
-        "writing": 2,
+        "writing": 1,
         "eof_received": 0,
         "clean_received": 0,
         "queues_binded": {}

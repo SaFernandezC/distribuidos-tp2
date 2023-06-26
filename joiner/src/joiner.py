@@ -84,13 +84,6 @@ class Joiner():
         if not already_added:
             self.ids_processed[client_id].append(message_id)
 
-        return already_added
-
-    def caer(self, location):
-        num = random.random()
-        if num < 0.1:
-            print(f"ME CAIGO EN {location}")
-            resultado = 1/0   
     
     def save_memory(self):
         data = {
@@ -103,7 +96,6 @@ class Joiner():
     def ack(self, forced):
         if len(self.tags_to_ack) >= MESSAGES_BATCH or forced:
             self.save_memory()
-            # Se Cae Aca
             self.input_queue1.ack(self.tags_to_ack)
             self.tags_to_ack = []
 
@@ -120,11 +112,9 @@ class Joiner():
             return
 
         if "eof" in batch:
-            print(f"Recibo EOF de {client_id} EN CALLBACK1")
             if client_id not in self.eof_received:
                 self.eof_received.append(client_id)
         elif "clean" in batch:
-            print(f"ME LLEGA CLEAN DE {client_id}")
             self.eof_manager.send_eof(client_id, msg_type="clean")
             if client_id in self.eof_received:
                 self.eof_received.remove(client_id)

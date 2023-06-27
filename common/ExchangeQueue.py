@@ -46,11 +46,10 @@ class ExchangeQueue():
             logging.error(f"Work Exchange: Error receiving message -> {e}")
         
     def _callback(self, ch, method, properties, body):
-        # try:
-        self.user_callback(body, method.delivery_tag)
-            # ch.basic_ack(delivery_tag=method.delivery_tag)
-        # except Exception as e:
-        #     logging.error(f"Exchange Queue: Error on callback -> {e}")
+        try:
+            self.user_callback(body, method.delivery_tag)
+        except Exception as e:
+            logging.error(f"Exchange Queue: Error on callback -> {e}")
 
     def ack(self, ack_element):
         try:

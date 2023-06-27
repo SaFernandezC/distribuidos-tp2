@@ -1,13 +1,11 @@
 from common.Connection import Connection
 import ujson as json
-from .utils import default, join_func_query3
+from .utils import join_func_default, join_func_query3
 import signal
 import logging
-import time
 from common.HeartBeater import HeartBeater
 
 from common.AtomicWrite import atomic_write, load_memory
-import random
 from hashlib import sha256
 
 MESSAGES_BATCH = 10
@@ -39,7 +37,6 @@ class Joiner():
         self.ids_processed = {}  # {Client_id: [ids]}
 
         self.get_previous_state()
-
 
     def get_previous_state(self):
         previous_state = load_memory("./data.txt")
@@ -105,11 +102,12 @@ class Joiner():
         batch = json.loads(body.decode())
         client_id = str(batch["client_id"])
         
-        self.tags_to_ack.append(ack_tag)
         duplicated = self.add_message_id(message_id, client_id)
         if duplicated:
             self.input_queue1.ack(ack_tag)
             return
+            
+        self.tags_to_ack.append(ack_tag)
 
         if "eof" in batch:
             if client_id not in self.eof_received:

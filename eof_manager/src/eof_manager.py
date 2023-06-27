@@ -14,12 +14,9 @@ CLEAN_TYPE = "clean_received"
 INT_LENGTH = 4
 
 class EofManager:
-
     def __init__(self, node_id):
-
         self.base_exchanges, self.base_work_queues = self._load_config()
 
-        # self.eof_msg = json.dumps({"eof": True})
         self.connection = Connection()
         self.eof_consumer = self.connection.Consumer('eof_manager')
         self.exchange_connections, self.queues_connection = self._declare_queues()
@@ -119,10 +116,6 @@ class EofManager:
             for i in range(listening):
                 dest_key = f"{queue}_{i+1}"
                 self.queues_connection[queue].send(self.build_eof_msg(client_id, message_type, dest_key))
-            
-            # if queue.find("groupby") > 0:
-            #     self.groupby_sent[client_id] += 1
-
 
     def process_eof(self, line, client_id):
         if "eof" in line:
@@ -143,7 +136,6 @@ class EofManager:
 
 
     def add_new_client(self, client_id):
-        # logging.info(f"Adding new client: {client_id}")
         self.active_clients.append(client_id)
         self.exchanges_per_client[client_id] = copy.deepcopy(self.base_exchanges)
         self.work_queues_per_client[client_id] = copy.deepcopy(self.base_work_queues)

@@ -1,4 +1,4 @@
-def default(key, item, side_table):
+def join_func_default(key, item, side_table):
     values = []
     for _i in key:
         values.append(item[_i])

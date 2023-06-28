@@ -1,5 +1,5 @@
-  monitorNODE_ID_HERE:
-    container_name: monitorNODE_ID_HERE
+  monitor_NODE_ID_HERE:
+    container_name: monitor_NODE_ID_HERE
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -10,9 +10,10 @@
       - PORT=500NODE_ID_HERE
       - NODES=NODES_HERE
     image: monitor:latest
-    restart: on-failure
     networks:
       - testing_net
+    links:
+    - rabbitmq
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock
     

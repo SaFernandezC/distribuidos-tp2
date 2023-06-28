@@ -111,6 +111,9 @@ def create_nodes_list(args):
         nodes.append(f"joiner_query_3_{i+1}")
     for i in range(args.dist_calculator):
         nodes.append(f"distance_calculator_{i+1}")
+    
+    for i in range(args.monitors):
+        nodes.append(f"monitor_{i+1}")
 
     return nodes
 

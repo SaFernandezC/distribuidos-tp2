@@ -171,7 +171,7 @@ def main():
 
     # Initialize server and start server loop
     i = 0
-    while True and i != 5:
+    while True and i != 10:
         print(f"Inicio Nuevo Cliente! [{i}]")
         while True:
             try:

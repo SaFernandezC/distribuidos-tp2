@@ -82,7 +82,7 @@ class Server:
         logging.info('action: accept_connections | result: in_progress')
         
         with self.shared_lock:
-            if len(self.current_clients) >= MAX_CLIENTS: #TODO: PONER CONSTANTES
+            if len(self.current_clients) >= MAX_CLIENTS:
                 print("Reject Client")
                 return None
         

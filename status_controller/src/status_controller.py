@@ -5,9 +5,6 @@ import logging
 from common.HeartBeater import HeartBeater
 from common.AtomicWrite import atomic_write, load_memory
 
-import random
-import time
-
 class StatusController:
 
     def __init__(self, input_queue_name, output_queue_name, qty_of_queries, node_id):

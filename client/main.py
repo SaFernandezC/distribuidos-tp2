@@ -18,9 +18,9 @@ STATIONS = {
 
 
 TRIPS = {
-    "montreal": "./data/montreal_old/trips.csv",
-    "toronto": "./data/toronto_old/trips.csv",
-    "washington": "./data/washington_old/trips.csv"
+    "montreal": "./data/montreal/trips.csv",
+    "toronto": "./data/toronto/trips.csv",
+    "washington": "./data/washington/trips.csv"
 }
 
 def initialize_config():
@@ -74,7 +74,7 @@ def ask_for_data(client):
     while not ready:
         ready, data = client.ask_results()
         logging.info("Waiting for data")
-        time.sleep(10)
+        time.sleep(20)
     
     logging.info("Data ready")
     print("Query1: ", data["query1"])
@@ -104,7 +104,6 @@ def main():
     print(f"Inicio Nuevo Cliente! [{id}]")
     while True:
         try:
-            # time.sleep(id)
             client = Client(server_ip, server_port, lines_per_batch)
             send_data(client, cities)
             ask_for_data(client)
@@ -112,7 +111,7 @@ def main():
             break
         except Exception as e:
             logging.error("Error: {} - Intento reconexion".format(e))
-            break
+            # break
             time.sleep(5)
     client.stop()
 

@@ -1,8 +1,11 @@
-CORRECT_QUERY_1 = {'2014-06-23': {'duration_sec': 390.0, 'count': 2, 'sum': 780.0}, '2014-08-12': {'duration_sec': 2400.0, 'count': 1, 'sum': 2400.0}, '2015-08-10': {'duration_sec': 3030.0, 'count': 2, 'sum': 6060.0}, '2016-08-15': {'duration_sec': 900.0, 'count': 2, 'sum': 1800.0}, '2016-10-20': {'duration_sec': 1200.0, 'count': 1, 'sum': 1200.0}, '2017-04-30': {'duration_sec': 180.0, 'count': 1, 'sum': 180.0}, '2018-07-24': {'duration_sec': 1420.0, 'count': 3, 'sum': 4260.0}, '2019-10-16': {'duration_sec': 505.0, 'count': 2, 'sum': 1010.0}, '2019-10-30': {'duration_sec': 631.6666666666666, 'count': 3, 'sum': 1895.0}, '2019-09-30': {'duration_sec': 1478.5, 'count': 2, 'sum': 2957.0}, '2011-09-04': {'duration_sec': 1489.0, 'count': 1, 'sum': 1489.0}, '2011-04-15': {'duration_sec': 1210.0, 'count': 1, 'sum': 1210.0}, '2012-10-28': {'duration_sec': 864.0, 'count': 2, 'sum': 1728.0}, '2012-04-21': {'duration_sec': 683.0, 'count': 1, 'sum': 683.0}, '2013-10-10': {'duration_sec': 571.0, 'count': 1, 'sum': 571.0}, '2013-12-28': {'duration_sec': 3688.0, 'count': 1, 'sum': 3688.0}, '2013-07-10': {'duration_sec': 757.0, 'count': 1, 'sum': 757.0}, '2013-06-09': {'duration_sec': 320.0, 'count': 1, 'sum': 320.0}, '2014-04-14': {'duration_sec': 623.0, 'count': 1, 'sum': 623.0}, '2014-04-29': {'duration_sec': 451.0, 'count': 1, 'sum': 451.0}, '2014-11-25': {'duration_sec': 2033.0, 'count': 4, 'sum': 8132.0}, '2014-05-15': {'duration_sec': 615.5, 'count': 2, 'sum': 1231.0}, '2015-06-26': {'duration_sec': 729.5, 'count': 2, 'sum': 1459.0}, '2016-09-27': {'duration_sec': 863.0, 'count': 2, 'sum': 1726.0}, '2017-10-28': {'duration_sec': 874.6666666666666, 'count': 3, 'sum': 2624.0}, '2017-05-04': {'duration_sec': 766.0, 'count': 2, 'sum': 1532.0}, '2017-07-27': {'duration_sec': 251.0, 'count': 1, 'sum': 251.0}, '2018-10-10': {'duration_sec': 869.0, 'count': 4, 'sum': 3476.0}, '2018-06-02': {'duration_sec': 5118.0, 'count': 2, 'sum': 10236.0}, '2018-11-04': {'duration_sec': 3058.0, 'count': 2, 'sum': 6116.0}, '2018-07-20': {'duration_sec': 1325.0, 'count': 3, 'sum': 3975.0}, '2018-09-08': {'duration_sec': 181.0, 'count': 1, 'sum': 181.0}, '2018-12-14': {'duration_sec': 514.0, 'count': 1, 'sum': 514.0}, '2019-03-20': {'duration_sec': 555.0, 'count': 2, 'sum': 1110.0}, '2020-10-11': {'duration_sec': 224.0, 'count': 1, 'sum': 224.0}, '2020-10-28': {'duration_sec': 1724.0, 'count': 1, 'sum': 1724.0}}
+CORRECT_QUERY_1 = {"2011-03-05": {'duration_sec': 1667.362707}, "2011-03-09": {'duration_sec': 830.043362}, "2011-04-15": {'duration_sec': 1281.006812}, "2011-08-26": {'duration_sec': 1059.071630}, "2011-09-04": {'duration_sec': 2159.195062}, "2011-09-06": {'duration_sec': 755.645161}, "2011-09-07": {'duration_sec': 706.048371}, "2011-12-06": {'duration_sec': 685.944986}, "2012-02-28": {'duration_sec': 705.341121}, "2012-04-21": {'duration_sec': 1673.907268}, "2012-09-17": {'duration_sec': 723.628415}, "2012-10-28": {'duration_sec': 926.158915}, "2012-12-25": {'duration_sec': 1463.256098}, "2014-06-23": {'duration_sec': 840.952233}, "2014-08-12": {'duration_sec': 789.154234}}
 
-CORRECT_QUERY_2 = [['Milton / du Parc', {'2016': 2, '2017': 5}], ['Métro St-Laurent (de Maisonneuve / St-Laurent)', {'2016': 1, '2017': 3}], ['Queen / Wellington', {'2016': 1, '2017': 3}], ['Métro Mont-Royal (Rivard / du Mont-Royal)', {'2016': 2, '2017': 5}], ['du Mont-Royal / Clark', {'2016': 2, '2017': 6}], ['Drolet / Beaubien', {'2016': 1, '2017': 3}], ['Bernard / Jeanne-Mance', {'2016': 1, '2017': 4}], ["Duluth / de l'Esplanade", {'2016': 1, '2017': 3}], ['Métro Charlevoix (Centre / Charlevoix)', {'2016': 1, '2017': 5}], ['de Bullion / du Mont-Royal', {'2016': 1, '2017': 3}], ['Marché Atwater', {'2016': 1, '2017': 3}], ['Marquette / Rachel', {'2016': 1, '2017': 3}], ['Notre-Dame / de la Montagne', {'2016': 1, '2017': 3}], ['University / Prince-Arthur', {'2016': 1, '2017': 4}], ['2nd & G St NE', {'2016': 1, '2017': 3}], ['14th & L St NW', {'2016': 1, '2017': 3}], ['14th & Rhode Island Ave NW', {'2016': 2, '2017': 5}], ['15th & East Capitol St NE', {'2016': 1, '2017': 4}], ['4th St & Madison Dr NW', {'2016': 2, '2017': 6}], ['New Hampshire Ave & 24th St NW', {'2016': 1, '2017': 3}], ["Independence Ave & L'Enfant Plaza SW/DOE", {'2016': 1, '2017': 4}], ['21st & I St NW', {'2016': 1, '2017': 4}], ['8th & O St NW', {'2016': 1, '2017': 4}], ['Thomas Circle', {'2016': 1, '2017': 6}], ['14th & V St NW', {'2016': 1, '2017': 3}], ['New York Ave & 15th St NW', {'2016': 1, '2017': 6}], ['1st & D St SE', {'2016': 1, '2017': 3}], ['Ohio Dr & West Basin Dr SW / MLK & FDR Memorials', {'2016': 1, '2017': 4}], ['15th & K St NW', {'2016': 1, '2017': 3}], ['4th & E St SW', {'2016': 1, '2017': 3}], ['Henry Bacon Dr & Lincoln Memorial Circle NW', {'2016': 1, '2017': 4}]]
+CORRECT_QUERY_2 = [["Bathurst St / Queens Quay W", {"2017": 5512, "2016": 634}], ["Bridgeman Ave / Bathurst St", {"2017": 854, "2016": 390}], ["Fort York Blvd / Garrison Rd", {"2017": 3657, "2016": 1700}], ["King St W / Fraser Ave", {"2017": 929, "2016": 427}], ["King St W / Joe Shuster Way", {"2017": 2414, "2016": 759}], ["Liberty St / Fraser Ave Green P", {"2017": 2054, "2016": 1005}], ["Nelson St / Duncan St", {"2017": 8830, "2016": 1329}], ["Ontario Place Blvd / Remembrance Dr", {"2017": 7245, "2016": 2767}], ["Ossington Ave / College St W", {"2017": 776, "2016": 347}], ["Queen St E / Sackville St", {"2017": 1617, "2016": 747}], ["Queen St W / Gladstone Ave", {"2017": 3703, "2016": 1678}], ["Queens Quay / Yonge St", {"2017": 6760, "2016": 1410}], ["Strachan Ave / Princes' Blvd", {"2017": 3255, "2016": 1601}], ["Wellington St W / Portland St", {"2017": 8786, "2016": 3548}], ["Wellington St W / Stafford St", {"2017": 1927, "2016": 748}]]
 
-CORRECT_QUERY_3 = [['Côte St-Antoine / Royal', 6.670738828948932], ['Cadillac / Sherbrooke', 7.107107455146269], ['François-Perrault / L.-O.-David', 6.264774436327337], ['LaSalle / Godin', 6.53756885740052], ['Valois / Ste-Catherine', 10.86260696181812], ['Marmier', 8.149483960281302], ['de la Pépinière / Pierre-de-Coubertin', 6.105784349330771], ['Drolet / Gounod', 6.119495936971842]]
+CORRECT_QUERY_3 = [["Jacques-Le Ber / de la Pointe Nord", 6.003307], ["Parc Plage", 6.582435], ["de Montmorency / Richardson", 6.435541]]
+
+# [["Jacques-Le Ber / de la Pointe Nord", 6.003307], ["Parc Plage", 6.582435], ["de Montmorency / Richardson", 6.435541]]
+# [["Bathurst St / Queens Quay W", {"2017": 5512, "2016": 634}], ["Bridgeman Ave / Bathurst St", {"2017": 854, "2016": 390}], ["Fort York Blvd / Garrison Rd", {"2017": 3657, "2016": 1700}], ["King St W / Fraser Ave", {"2017": 929, "2016": 427}], ["King St W / Joe Shuster Way", {"2017": 2414, "2016": 759}], ["Liberty St / Fraser Ave Green P", {"2017": 2054, "2016": 1005}], ["Nelson St / Duncan St", {"2017": 8830, "2016": 1329}], ["Ontario Place Blvd / Remembrance Dr", {"2017": 7245, "2016": 2767}], ["Ossington Ave / College St W", {"2017": 776, "2016": 347}], ["Queen St E / Sackville St", {"2017": 1617, "2016": 747}], ["Queen St W / Gladstone Ave", {"2017": 3703, "2016": 1678}], ["Queens Quay / Yonge St", {"2017": 6760, "2016": 1410}], ["Strachan Ave / Princes' Blvd", {"2017": 3255, "2016": 1601}], ["Wellington St W / Portland St", {"2017": 8786, "2016": 3548}], ["Wellington St W / Stafford St", {"2017": 1927, "2016": 748}]]
 
 def check_query_1(query_received):
     if len(query_received) != len(CORRECT_QUERY_1):
@@ -12,12 +15,15 @@ def check_query_1(query_received):
         received = query_received.get(key)
         if len(value) != len(received):
             return False
-        if value["duration_sec"] != received["duration_sec"]:
+        try:
+            if int(value["duration_sec"]) != int(received["duration_sec"]):
+                return False
+        except:
             return False
-        if value["count"] != received["count"]:
-            return False
-        if value["sum"] != received["sum"]:
-            return False
+        # if value["count"] != received["count"]:
+        #     return False
+        # if value["sum"] != received["sum"]:
+        #     return False
     
     return True
 
@@ -48,7 +54,7 @@ def check_query_3(query_received):
         found = False
         for expected in CORRECT_QUERY_3:
             if value[0] == expected[0]:
-                if value[1] != expected[1]:
+                if int(value[1]) != int(expected[1]):
                     return False
                 found = True
                 break

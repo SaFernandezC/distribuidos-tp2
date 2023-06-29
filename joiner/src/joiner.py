@@ -6,6 +6,7 @@ import logging
 from common.HeartBeater import HeartBeater
 from common.AtomicWrite import atomic_write, load_memory
 from hashlib import sha256
+import time
 
 MESSAGES_BATCH = 10
 CALLBACK_1 = "1"
@@ -189,7 +190,7 @@ class Joiner():
                     data.append(self._select(res))
 
             if len(data) > 0:
-                self.output_queue.send(json.dumps({"client_id": client_id, "data": data}))
+                self.output_queue.send(json.dumps({"client_id": client_id, "data": data, "message_id": time.time(), "sender":self.node_id}))
 
         self.input_queue2.ack(ack_tag)
 

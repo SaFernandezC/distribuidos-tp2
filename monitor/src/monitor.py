@@ -11,6 +11,8 @@ from common.HeartBeater import HeartBeater
 
 WIN_TIME = 15
 WAIT_TIME = 2 * WIN_TIME
+SLEEP_TIME = 1
+TIMEOUT_THRESHOLD = 5
 
 class Monitor:
     def __init__(self, replica_id, replicas, nodes):
@@ -36,14 +38,14 @@ class Monitor:
         self.receiver_thread = threading.Thread(target=Receiver(self.socket, self.receiver_queue).run)
         self.receiver_thread.start()
 
-        self.last_response_lock = threading.Lock() # Hacer un AtomicValue
+        self.last_response_lock = threading.Lock()
         self.leader_last_response_time = 0
 
-        self.leader_timeout_threshold = 5 # USAR CONSTANTE
+        self.leader_timeout_threshold = TIMEOUT_THRESHOLD
 
         self.check_alive_thread = None
 
-        self.election_start_time_lock = threading.Lock() # Hacer un AtomicValue
+        self.election_start_time_lock = threading.Lock()
         self.election_start_time = None
 
         signal.signal(signal.SIGTERM, self._handle_sigterm)
@@ -165,16 +167,15 @@ class Monitor:
             if self.election_due():
                 with self.election_start_time_lock:
                     if self.election_start_time is None:
-                        print("Other Election Took Too Much, Sorry Not Sorry")
                         self.election_in_process.set(False)
                         self.election_start_time = None
 
             if self.election_in_process.get():
-                time.sleep(1)
+                time.sleep(SLEEP_TIME)
                 continue
 
             if self.is_leader.get():
-                time.sleep(1)
+                time.sleep(SLEEP_TIME)
                 continue
             
             if self.leader_id.get() is None:
@@ -190,7 +191,7 @@ class Monitor:
             leader = self.leader_id.get()
             if leader is not None:
                 self.sender_queue.put(("ALIVE?", ('monitor_'+str(leader), 5000+leader)))
-            time.sleep(1)
+            time.sleep(SLEEP_TIME)
 
     def send_message_to_higher_replicas(self, message):
         for replica in self.replicas:

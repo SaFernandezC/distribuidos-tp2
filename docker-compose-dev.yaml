@@ -132,6 +132,8 @@ services:
     image: monitor:latest
     networks:
       - testing_net
+    links:
+    - rabbitmq
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock
     
@@ -150,6 +152,8 @@ services:
     image: monitor:latest
     networks:
       - testing_net
+    links:
+    - rabbitmq
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock
     
@@ -168,6 +172,8 @@ services:
     image: monitor:latest
     networks:
       - testing_net
+    links:
+    - rabbitmq
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock
     

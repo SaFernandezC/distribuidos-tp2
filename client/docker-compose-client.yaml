@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   client1:
     image: client:latest
@@ -11,25 +11,27 @@ services:
     volumes:
       - ./data:/data
 
-  # client2:
-  #   image: client:latest
-  #   networks:
-  #     - distribuidos-tp2_testing_net
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - ID=2
-  #   volumes:
-  #     - ./data:/data
+  client2:
+    image: client:latest
+    networks:
+      - distribuidos-tp2_testing_net
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ID=2
+      - CITIES=["toronto"]
+    volumes:
+      - ./data:/data
 
-  # client3:
-  #   image: client:latest
-  #   networks:
-  #     - distribuidos-tp2_testing_net
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #     - ID=3
-  #   volumes:
-  #     - ./data:/data
+  client3:
+    image: client:latest
+    networks:
+      - distribuidos-tp2_testing_net
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ID=3
+      - CITIES=["washington"]
+    volumes:
+      - ./data:/data
 
 networks:
   distribuidos-tp2_testing_net:

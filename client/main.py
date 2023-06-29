@@ -18,9 +18,9 @@ STATIONS = {
 
 
 TRIPS = {
-    "montreal": "./data/montreal/trips.csv",
-    "toronto": "./data/toronto/trips.csv",
-    "washington": "./data/washington/trips.csv"
+    "montreal": "./data/montreal_old/trips.csv",
+    "toronto": "./data/toronto_old/trips.csv",
+    "washington": "./data/washington_old/trips.csv"
 }
 
 def initialize_config():
@@ -112,6 +112,7 @@ def main():
             break
         except Exception as e:
             logging.error("Error: {} - Intento reconexion".format(e))
+            break
             time.sleep(5)
     client.stop()
 

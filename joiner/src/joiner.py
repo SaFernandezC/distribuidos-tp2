@@ -190,7 +190,9 @@ class Joiner():
                     data.append(self._select(res))
 
             if len(data) > 0:
-                self.output_queue.send(json.dumps({"client_id": client_id, "data": data, "message_id": time.time(), "sender":self.node_id}))
+                id = time.time()
+                self.output_queue.send(json.dumps({"client_id": client_id, "data": data, "message_id": id, "sender":self.node_id}))
+                # self.output_queue.send(json.dumps({"client_id": client_id, "data": data, "message_id": id, "sender":self.node_id}))
 
         self.input_queue2.ack(ack_tag)
 

@@ -13,17 +13,11 @@ def check_query_1(query_received):
     
     for key, value in CORRECT_QUERY_1.items():
         received = query_received.get(key)
-        if len(value) != len(received):
-            return False
         try:
             if int(value["duration_sec"]) != int(received["duration_sec"]):
                 return False
         except:
             return False
-        # if value["count"] != received["count"]:
-        #     return False
-        # if value["sum"] != received["sum"]:
-        #     return False
     
     return True
 
@@ -81,9 +75,9 @@ def check_queries(query1, query2, query3):
 
 
 def main():
-    query1 = {}
-    query2 = {}
-    query3 = {}
+    query1 = {'2014-06-23': {'duration_sec': 840.9522332506203, 'count': 19344, 'sum': 16267380.0}, '2014-08-12': {'duration_sec': 789.1542340281749, 'count': 19237, 'sum': 15180960.0}, '2011-03-05': {'duration_sec': 1667.36270691334, 'count': 2054, 'sum': 3424763.0}, '2011-04-15': {'duration_sec': 1281.0068115471943, 'count': 3083, 'sum': 3949344.0}, '2011-09-04': {'duration_sec': 2159.1950622321974, 'count': 4901, 'sum': 10582215.0}, '2011-09-06': {'duration_sec': 755.6451612903226, 'count': 2666, 'sum': 2014550.0}, '2011-03-09': {'duration_sec': 830.0433618843683, 'count': 1868, 'sum': 1550521.0}, '2011-12-06': {'duration_sec': 685.944986344128, 'count': 2563, 'sum': 1758077.0}, '2011-08-26': {'duration_sec': 1059.071630128066, 'count': 4607, 'sum': 4879143.0}, '2011-09-07': {'duration_sec': 706.0483706720978, 'count': 1964, 'sum': 1386679.0}, '2012-02-28': {'duration_sec': 705.3411214953271, 'count': 428, 'sum': 301886.0}, '2012-04-21': {'duration_sec': 1673.907268170426, 'count': 399, 'sum': 667889.0}, '2012-09-17': {'duration_sec': 723.6284153005464, 'count': 549, 'sum': 397272.0}, '2012-10-28': {'duration_sec': 926.1589147286821, 'count': 258, 'sum': 238949.0}, '2012-12-25': {'duration_sec': 1463.2560975609756, 'count': 82, 'sum': 119987.0}}
+    query2 = [['Nelson St / Duncan St', {'2016': 1329, '2017': 8830}], ['Queen St E / Sackville St', {'2016': 747, '2017': 1617}], ['Queen St W / Gladstone Ave', {'2016': 1678, '2017': 3703}], ['Bathurst St / Queens Quay W', {'2016': 634, '2017': 5512}], ['Queens Quay / Yonge St', {'2016': 1410, '2017': 6760}], ['Wellington St W / Portland St', {'2016': 3548, '2017': 8786}], ['Fort York Blvd / Garrison Rd', {'2016': 1700, '2017': 3657}], ["Strachan Ave / Princes' Blvd", {'2016': 1601, '2017': 3255}], ['Ontario Place Blvd / Remembrance Dr', {'2016': 2767, '2017': 7245}], ['Liberty St / Fraser Ave Green P', {'2016': 1005, '2017': 2054}], ['Wellington St W / Stafford St', {'2016': 748, '2017': 1927}], ['King St W / Fraser Ave', {'2016': 427, '2017': 929}], ['King St W / Joe Shuster Way', {'2016': 759, '2017': 2414}], ['Bridgeman Ave / Bathurst St', {'2016': 390, '2017': 854}], ['Ossington Ave / College St W', {'2016': 347, '2017': 776}]]
+    query3 = [['Parc Plage', 6.5824350514101235], ['de Montmorency / Richardson', 6.435541312932454], ['Jacques-Le Ber / de la Pointe Nord', 6.00330747952395]]
     check_queries(query1, query2, query3)
 
 

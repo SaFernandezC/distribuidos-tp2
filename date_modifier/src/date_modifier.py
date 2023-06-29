@@ -89,6 +89,7 @@ class DateModifier():
             for item in batch["data"]:
                 item['date'] = self._restar_dia(item['date'])
             self.output_queue.send(json.dumps({"client_id": client_id, "data":batch["data"]}))
+            # self.output_queue.send(json.dumps({"client_id": client_id, "data":batch["data"]}))
         self.input_queue.ack(ack_tag)
 
     def run(self):

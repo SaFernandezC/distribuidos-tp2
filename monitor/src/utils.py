@@ -13,6 +13,15 @@ class AtomicValue:
     def get(self):
         with self.lock:
             return self.value
+    
+    def get_lock(self):
+        return self.lock
+
+    def get_unsafe_value(self):
+        return self.value
+
+    def set_unsafe_value(self, value):
+        self.value = value
 
 class Sender:
     def __init__(self, skt, queue):

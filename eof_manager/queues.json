@@ -6,50 +6,50 @@
         "clean_received": 0
     },
     "joiner_query_1": {
-        "writing": 1,
-        "listening": 1,
+        "writing": 3,
+        "listening": 2,
         "eof_received": 0,
         "clean_received": 0
     },
     "groupby_query_1": {
-        "writing": 1,
+        "writing": 2,
         "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "joiner_query_2": {
-        "writing": 1,
-        "listening": 1,
+        "writing": 3,
+        "listening": 2,
         "eof_received": 0,
         "clean_received": 0
     },
     "groupby_query_2": {
-        "writing": 1,
+        "writing": 2,
         "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "joiner_query_3": {
-        "writing": 1,
-        "listening": 1,
+        "writing": 3,
+        "listening": 2,
         "eof_received": 0,
         "clean_received": 0
     },
     "distance_calculator": {
-        "writing": 1,
-        "listening": 1,
+        "writing": 2,
+        "listening": 2,
         "eof_received": 0,
         "clean_received": 0
     },
     "groupby_query_3": {
-        "writing": 1,
+        "writing": 2,
         "listening": 1,
         "eof_received": 0,
         "clean_received": 0
     },
     "trip_parser": {
         "writing": 1,
-        "listening": 1,
+        "listening": 3,
         "eof_received": 0,
         "clean_received": 0
     },

@@ -183,14 +183,14 @@ class Monitor:
                 continue
 
             with self.last_response_lock:
-                # print("Comparo Tiempos")
                 if time.time() - self.leader_last_response_time > self.leader_timeout_threshold and self.leader_id.get() is not None:
                     print(f"Leader {self.leader_id.get()} is down. New leader election")
                     self.new_election()
 
-            leader = self.leader_id.get()
-            if leader is not None:
-                self.sender_queue.put(("ALIVE?", ('monitor_'+str(leader), 5000+leader)))
+            with self.leader_id.get_lock():
+                leader = self.leader_id.get_unsafe_value()
+                if leader is not None:
+                    self.sender_queue.put(("ALIVE?", ('monitor_'+str(leader), 5000+leader)))
             time.sleep(SLEEP_TIME)
 
     def send_message_to_higher_replicas(self, message):

@@ -7,28 +7,29 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - ID=1
+      - CITIES=["montreal", "toronto", "washington"]
     volumes:
       - ./data:/data
 
-  client2:
-    image: client:latest
-    networks:
-      - distribuidos-tp2_testing_net
-    environment:
-      - PYTHONUNBUFFERED=1
-      - ID=2
-    volumes:
-      - ./data:/data
+  # client2:
+  #   image: client:latest
+  #   networks:
+  #     - distribuidos-tp2_testing_net
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - ID=2
+  #   volumes:
+  #     - ./data:/data
 
-  client3:
-    image: client:latest
-    networks:
-      - distribuidos-tp2_testing_net
-    environment:
-      - PYTHONUNBUFFERED=1
-      - ID=3
-    volumes:
-      - ./data:/data
+  # client3:
+  #   image: client:latest
+  #   networks:
+  #     - distribuidos-tp2_testing_net
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - ID=3
+  #   volumes:
+  #     - ./data:/data
 
 networks:
   distribuidos-tp2_testing_net:

@@ -111,6 +111,9 @@ def create_nodes_list(args):
         nodes.append(f"joiner_query_3_{i+1}")
     for i in range(args.dist_calculator):
         nodes.append(f"distance_calculator_{i+1}")
+    
+    for i in range(args.monitors):
+        nodes.append(f"monitor_{i+1}")
 
     return nodes
 
@@ -193,21 +196,18 @@ def create_queues_file(args):
 
         data["joiner_query_1"]["writing"] = args.filter_trips_1
         data["joiner_query_1"]["listening"] = args.joiner_1
-        data["joiner_query_1"]["clean_received"] = args.filter_trips_1
 
         data["groupby_query_1"]["writing"] = args.joiner_1
         data["groupby_query_1"]["listening"] = 1
 
         data["joiner_query_2"]["writing"] = args.filter_trips_2
         data["joiner_query_2"]["listening"] = args.joiner_2
-        data["joiner_query_2"]["clean_received"] = args.filter_trips_2
 
         data["groupby_query_2"]["writing"] = args.joiner_2
         data["groupby_query_2"]["listening"] = 1
 
         data["joiner_query_3"]["writing"] = args.filter_trips_3
         data["joiner_query_3"]["listening"] = args.joiner_3
-        data["joiner_query_3"]["clean_received"] = args.filter_trips_3
 
         data["distance_calculator"]["writing"] = args.joiner_3
         data["distance_calculator"]["listening"] = args.dist_calculator

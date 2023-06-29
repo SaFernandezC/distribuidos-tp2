@@ -13,7 +13,6 @@ def split_file(filename):
 
     return file_dir, file_name
 
-
 def atomic_write(filename, data, encoding="utf-8"):
     file_dir, file_name = split_file(filename)
 
@@ -30,7 +29,6 @@ def atomic_write(filename, data, encoding="utf-8"):
     os.rename(temp_name, new_name)
 
     #Si se cae aca -> Quedan 2 versiones (eventualmente se borraran)
-
     for file in os.listdir(file_dir):
         if file != new_file and file.find(file_name) > 0:
             real_file = f"{file_dir}/{file}"

@@ -127,11 +127,12 @@ class Groupby:
         batch = json.loads(body.decode())
         client_id = str(batch["client_id"])
 
-        self.tags_to_ack.append(ack_tag)
         duplicated = self.add_message_id(message_id, client_id)
         if duplicated:
             self.input_queue.ack(ack_tag)
             return
+            
+        self.tags_to_ack.append(ack_tag)
 
         if "eof" in batch:
             if client_id in self.group_table:

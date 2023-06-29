@@ -19,7 +19,7 @@ def initialize_config():
         config_params["primary_key"] = config.get("DEFAULT", "PRIMARY_KEY", fallback='')
         config_params["primary_key_2"] = config.get("DEFAULT", "PRIMARY_KEY_2", fallback='')
         config_params["select"] = config.get("DEFAULT", "SELECT", fallback=None)
-        config_params["joiner_function"] = config.get("DEFAULT", "JOINER_FUNCTION", fallback='default')
+        config_params["joiner_function"] = config.get("DEFAULT", "JOINER_FUNCTION", fallback='join_func_default')
         config_params["id"] = os.getenv('ID', None)
 
     except KeyError as e:

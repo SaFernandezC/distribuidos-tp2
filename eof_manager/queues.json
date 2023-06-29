@@ -9,7 +9,7 @@
         "writing": 1,
         "listening": 1,
         "eof_received": 0,
-        "clean_received": 1
+        "clean_received": 0
     },
     "groupby_query_1": {
         "writing": 1,
@@ -21,7 +21,7 @@
         "writing": 1,
         "listening": 1,
         "eof_received": 0,
-        "clean_received": 1
+        "clean_received": 0
     },
     "groupby_query_2": {
         "writing": 1,
@@ -33,7 +33,7 @@
         "writing": 1,
         "listening": 1,
         "eof_received": 0,
-        "clean_received": 1
+        "clean_received": 0
     },
     "distance_calculator": {
         "writing": 1,
